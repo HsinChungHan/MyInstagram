@@ -12,9 +12,39 @@ class UserProfileViewController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupNavigationBar()
+        fetchUser()
+        registerCell()
+    }
+    
+    func setupNavigationBar() {
         collectionView?.backgroundColor = .white
         navigationItem.title = "User Profile"
-        fetchUser()
+        let rightBarItem = UIBarButtonItem(image: UIImage(named: "gear"), style: .plain, target: self, action: #selector(handleLogOutButton))
+        rightBarItem.tintColor = .black
+        navigationItem.rightBarButtonItem = rightBarItem
+    
+    }
+    @objc func handleLogOutButton(){
+        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        
+        alertController.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { (_) in
+            do{
+                try Auth.auth().signOut()
+                //當使用者登出時，我們要到MainTabBarController那去判斷使用者是否有登入 Ep8,09:00有提到
+            }catch let signOutErr{
+                print("Failed to sign out: ", signOutErr.localizedDescription)
+            }
+        }))
+        
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (_) in
+            self.dismiss(animated: true, completion: nil)
+        }))
+        present(alertController, animated: true, completion: nil)
+    }
+    
+    
+    private func registerCell() {
         collectionView?.register(UserProfileHeaderCell.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "headerId")
         collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cellId")
     }

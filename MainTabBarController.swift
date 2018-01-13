@@ -7,11 +7,20 @@
 //
 
 import UIKit
-
+import Firebase
 class MainTabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if Auth.auth().currentUser == nil{
+            //Ep9 12:00
+            DispatchQueue.main.async {//在console區，會出現view不在window hirachy
+                let loginVC = LogInViewController()
+                let naviVC = UINavigationController(rootViewController: loginVC)
+                self.present(naviVC, animated: true, completion: nil)
+            }
+            return//為了不繼續執行下面的code
+        }
         view.backgroundColor = .blue
         //將redVC嵌套在naviVC
         let layout = UICollectionViewFlowLayout()
