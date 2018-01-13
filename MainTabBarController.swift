@@ -13,7 +13,7 @@ class MainTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         if Auth.auth().currentUser == nil{
-            //Ep9 12:00
+            //Ep8 12:00
             DispatchQueue.main.async {//在console區，會出現view不在window hirachy
                 let loginVC = LogInViewController()
                 let naviVC = UINavigationController(rootViewController: loginVC)

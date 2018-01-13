@@ -136,7 +136,6 @@ class SignUpViewController: UIViewController{
             
         }
     }
-    
     fileprivate func readRef(user: User) {
         let ref = Database.database().reference(fromURL: "https://instagram-ee809.firebaseio.com/")
         let userRef = ref.child("users").child(user.uid)
@@ -152,6 +151,27 @@ class SignUpViewController: UIViewController{
         }
     }
     
+    let logInButton: UIButton = {
+        let btn = UIButton(type: .system)
+        let attributedTitle = NSMutableAttributedString(string: "Already have an acoount? ", attributes: [
+            NSAttributedStringKey.font : UIFont.systemFont(ofSize: 12),
+            NSAttributedStringKey.foregroundColor : UIColor.lightGray
+            ])
+        attributedTitle.append(NSMutableAttributedString(string: "Sign in.", attributes: [
+            NSAttributedStringKey.font : UIFont.boldSystemFont(ofSize: 12),
+            NSAttributedStringKey.foregroundColor : UIColor.rgb(red: 17, green: 154, blue: 237)
+            ]))
+        btn.setAttributedTitle(attributedTitle, for: .normal)
+        btn.addTarget(self, action: #selector(handleLogInButton), for: .touchUpInside)
+        btn.titleLabel?.textAlignment = .center
+        return btn
+    }()
+    
+    @objc func handleLogInButton(){
+            _ = navigationController?.popViewController(animated: true)
+    }
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -159,6 +179,7 @@ class SignUpViewController: UIViewController{
         navigationController?.isNavigationBarHidden = true
         setupAddPhotoButton()
         setupStackView()
+        setupLogInButton()
     }
     
     fileprivate func setupAddPhotoButton() {
@@ -174,6 +195,11 @@ class SignUpViewController: UIViewController{
         stackView.distribution = .fillEqually
         view.addSubview(stackView)
         stackView.anchor(top: plusPhotoButton.bottomAnchor, topPadding: 20, bottom: nil, bottomPadding: 0, left: view.leftAnchor, leftPadding: 40, right: view.rightAnchor, rightPadding: 40, width: 0, height: 200)
+    }
+    
+    fileprivate func setupLogInButton(){
+        view.addSubview(logInButton)
+        logInButton.anchor(top: nil, topPadding: 0, bottom: view.bottomAnchor, bottomPadding: -10, left: view.leftAnchor, leftPadding: 0, right: view.rightAnchor, rightPadding: 0, width: 0, height: 0)
     }
 }
 
