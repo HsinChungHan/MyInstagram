@@ -30,8 +30,12 @@ class UserProfileViewController: UICollectionViewController {
         
         alertController.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { (_) in
             do{
+                ///我們需要到MainTabBarController那去判斷使用者是否有登入 Ep8,09:00有提到
                 try Auth.auth().signOut()
-                //當使用者登出時，我們要到MainTabBarController那去判斷使用者是否有登入 Ep8,09:00有提到
+                let logInVC = LogInViewController()
+                let naviVC = UINavigationController(rootViewController: logInVC)
+                self.present(naviVC, animated: true, completion: nil)
+                
             }catch let signOutErr{
                 print("Failed to sign out: ", signOutErr.localizedDescription)
             }

@@ -84,19 +84,34 @@ class LogInViewController: UIViewController{
     
     let logInButton: UIButton = {
         let btn = UIButton(type: .system)
-        btn.setTitle("Sign Up", for: .normal)
+        btn.setTitle("Login", for: .normal)
         btn.setTitleColor(.white, for: .normal)
         btn.layer.cornerRadius = 5.0
         btn.layer.masksToBounds = true
         btn.backgroundColor = UIColor.rgb(red: 149, green: 204, blue: 244)
         btn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
-        btn.addTarget(self, action: #selector(handleSignInButton), for: .touchUpInside)
-        //先預設btn一開始都不能按，一直等到user把表格全填完才可按
+        btn.addTarget(self, action: #selector(handleLogInButton), for: .touchUpInside)
         btn.isEnabled = false
         return btn
     }()
-    @objc func handleSignInButton(){
-        print("Sign in")
+    @objc func handleLogInButton(){
+        guard let email = emailTextField.text else{return}
+        guard let password = passwordTextField.text else{return}
+        Auth.auth().signIn(withEmail: email, password: password) { (user, error) in
+            if let err = error {
+                print("Failed to log in: ", err.localizedDescription)
+                return
+            }
+            guard let user = user else {return}
+            print("Sucessfully log in: ", user.uid)
+            //因為在mainTabBarViewController的setupViewController()放在viewDidLoad中，只會被call到一次，當再重新到
+            //mainTabBarViewController時，就不會被call到了，所以我們現在要強迫它在call一次setupViewController()
+            //我覺得效用與viewWillAppear相似
+            //這邊的rootViewController = MainTabBarViewController()因為在Appdelegate中有設定過
+            guard let mainTabBarVC = UIApplication.shared.keyWindow?.rootViewController as? MainTabBarController else {return}
+            mainTabBarVC.setupViewController()
+            self.dismiss(animated: true, completion: nil)
+        }
     }
     
     

@@ -129,6 +129,12 @@ class SignUpViewController: UIViewController{
                     }
                     print("Successfully to save user info into db.")
                     self.readRef(user: user)
+                    
+                    guard let mainTabBarVC = UIApplication.shared.keyWindow?.rootViewController as? MainTabBarController else {return}
+                    DispatchQueue.main.async {
+                        mainTabBarVC.setupViewController()
+                        self.dismiss(animated: true, completion: nil)
+                    }
                 })
             })
             
@@ -170,8 +176,6 @@ class SignUpViewController: UIViewController{
     @objc func handleLogInButton(){
             _ = navigationController?.popViewController(animated: true)
     }
-    
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
