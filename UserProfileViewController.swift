@@ -16,6 +16,7 @@ class UserProfileViewController: UICollectionViewController {
         navigationItem.title = "User Profile"
         fetchUser()
         collectionView?.register(UserProfileHeaderCell.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: "headerId")
+        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cellId")
     }
     
     //設定header，要記得去調整header的大小，還有register header
@@ -25,6 +26,15 @@ class UserProfileViewController: UICollectionViewController {
         return header
     }
     
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 7
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cellId", for: indexPath)
+        cell.backgroundColor = .green
+        return cell
+    }
     
     var currentUser: CurrentUser?
     fileprivate func fetchUser() {
@@ -48,6 +58,22 @@ extension UserProfileViewController: UICollectionViewDelegateFlowLayout{
    //去調整header大小
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: view.frame.width, height: 200)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 1
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 1
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let padding: CGFloat = 1
+        print(view.frame.width)
+        let width = (view.frame.width - padding * 2)/3
+        let height = width
+        return CGSize(width: width, height: height)
     }
 }
 
