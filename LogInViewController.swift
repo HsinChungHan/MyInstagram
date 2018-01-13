@@ -172,7 +172,7 @@ class LogInViewController: UIViewController{
         stackView.spacing = 5
         stackView.distribution = .fillEqually
         view.addSubview(stackView)
-        stackView.anchor(top: plusPhotoButton.bottomAnchor, topPadding: 20, bottom: nil, left: view.leftAnchor, leftPadding: 40, right: view.rightAnchor, rightPadding: 40, height: 200)
+        stackView.anchor(top: plusPhotoButton.bottomAnchor, topPadding: 20, bottom: nil, bottomPadding: 0, left: view.leftAnchor, leftPadding: 40, right: view.rightAnchor, rightPadding: 40, width: 0, height: 200)
     }
 }
 

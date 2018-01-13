@@ -7,12 +7,12 @@
 //
 
 import Foundation
-class MyUser: Codable {
+class CurrentUser: Codable {
     let email , password , profileImageUrl , userName  : String
-    init(email: String, password: String, profileImageUrl: String, userName: String) {
-        self.email = email
-        self.password = password
-        self.profileImageUrl = profileImageUrl
-        self.userName = userName
+    init(dictionary: [String : Any]) {
+        self.email = dictionary["email"] as? String ?? ""
+        self.password = dictionary["password"] as? String ?? ""
+        self.profileImageUrl = dictionary["profileImageUrl"] as? String ?? ""
+        self.userName = dictionary["userName"] as? String ?? ""
     }
 }

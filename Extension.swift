@@ -34,7 +34,7 @@ extension UIButton {
 }
 
 extension UIView{
-    func anchor(top: NSLayoutYAxisAnchor?, topPadding: CGFloat = 0, bottom: NSLayoutYAxisAnchor?, bottomPadding: CGFloat = 0, left: NSLayoutXAxisAnchor?, leftPadding: CGFloat = 0, right: NSLayoutXAxisAnchor?, rightPadding: CGFloat = 0, width: CGFloat = 0, height: CGFloat = 0){
+    func anchor(top: NSLayoutYAxisAnchor?, topPadding: CGFloat , bottom: NSLayoutYAxisAnchor?, bottomPadding: CGFloat , left: NSLayoutXAxisAnchor?, leftPadding: CGFloat , right: NSLayoutXAxisAnchor?, rightPadding: CGFloat , width: CGFloat , height: CGFloat ){
         translatesAutoresizingMaskIntoConstraints = false
         if let top = top{
             topAnchor.constraint(equalTo: top, constant: topPadding).isActive = true
