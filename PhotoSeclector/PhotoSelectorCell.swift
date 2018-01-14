@@ -1,5 +1,5 @@
 //
-//  PhotoSelectorHeaderCell.swift
+//  PhotoSelectorCell.swift
 //  Instagram
 //
 //  Created by 辛忠翰 on 14/01/18.
@@ -8,14 +8,14 @@
 
 import UIKit
 
-class PhotoSelectorHeaderCell: BasicCell {
+class PhotoSelectorCell: BasicCell {
     var image: UIImage?{
         willSet{
             imageView.image = newValue
         }
     }
     let imageView: UIImageView = {
-       let imgView = UIImageView()
+        let imgView = UIImageView()
         imgView.image = UIImage(named: "irene")
         imgView.contentMode = .scaleAspectFill
         imgView.clipsToBounds = true

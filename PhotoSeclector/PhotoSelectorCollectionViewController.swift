@@ -7,7 +7,7 @@
 //
 
 import UIKit
-
+import Photos
 class PhotoSelectorCollectionViewController: UICollectionViewController {
    
     override func viewDidLoad() {
@@ -15,6 +15,7 @@ class PhotoSelectorCollectionViewController: UICollectionViewController {
         collectionView?.backgroundColor = .white
         setupNavigationBar()
         registerCell()
+        fetchPhotos()
     }
 
     override var prefersStatusBarHidden: Bool{
@@ -22,9 +23,9 @@ class PhotoSelectorCollectionViewController: UICollectionViewController {
     }
     
     let headerId = "PhotoSelectorHeaderCellId"
-    let cellId = "cellId"
+    let cellId = "PhotoSelectorCellId"
     fileprivate func registerCell(){
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView?.register(PhotoSelectorCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.register(PhotoSelectorHeaderCell.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerId)
     }
     
@@ -44,23 +45,64 @@ class PhotoSelectorCollectionViewController: UICollectionViewController {
         
     }
     
+    var images = [UIImage]()
+    fileprivate func fetchPhotos(){
+        let fetchOptions = PHFetchOptions()
+        //一開始最多抓取十張照片
+        fetchOptions.fetchLimit = 10
+        //這邊可以設定圖片的先後順序，in the decending order
+        let sortDescriptor = NSSortDescriptor(key: "creationDate", ascending: false)
+        fetchOptions.sortDescriptors = [sortDescriptor]
+        
+        let allPhotos = PHAsset.fetchAssets(with: .image, options: fetchOptions)
+        allPhotos.enumerateObjects {[weak self] (asset, count, stop) in
+            //asset: 抓取照片的地方; count: 抓了多少照片;
+            //在這邊處理抓取到照片
+            let imgManager = PHImageManager.default()
+            let targetSize = CGSize(width: 350, height: 350)
+            //讓圖片同步出現(也就是說等圖片都從asset抓取完後才會做別的事情)Ep13 07:30
+            let options = PHImageRequestOptions()
+            options.isSynchronous = true
+            imgManager.requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFit , options: options, resultHandler: { (image, info) in
+                if let img = image{
+                     self?.images.append(img)
+                }
+                
+                //Ep13 12:00
+                //因為count是從0開始，而allPhotos.count=10，所以當所有的照片從asset撈出來後，count = 9
+                //因此count == allPhotos.count - 1代表當所有照片都撈完後，執行collectionView?.reloadData()
+                if count == allPhotos.count - 1{
+                     self?.collectionView?.reloadData()
+                }
+            })
+        }
+    }
+    
 //Mark: CollectionViewDelegate, CollectionViewDataSource
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
+        return images.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
-        cell.backgroundColor = .red
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! PhotoSelectorCell
+        cell.image = images[indexPath.item]
         return cell
     }
     
+    var header: PhotoSelectorHeaderCell?
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! PhotoSelectorHeaderCell
-        return header
+        header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! PhotoSelectorHeaderCell
+        if images.count > 0{
+            header?.image = images[0]
+        }
+
+        return header!
     }
     
-    
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        header?.image = images[indexPath.item]
+        print(indexPath.item)
+    }
 }
 
 //MARK: UICollectionViewDelegateFlowLayout
