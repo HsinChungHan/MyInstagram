@@ -16,7 +16,7 @@ class PhotoSelectorHeaderCell: BasicCell {
     }
     let imageView: UIImageView = {
        let imgView = UIImageView()
-        imgView.image = UIImage(named: "irene")
+        imgView.backgroundColor = .lightGray
         imgView.contentMode = .scaleAspectFill
         imgView.clipsToBounds = true
         return imgView

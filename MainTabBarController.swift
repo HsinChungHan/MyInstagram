@@ -92,6 +92,7 @@ extension MainTabBarController: UITabBarControllerDelegate{
             let photoSelectorCVC = PhotoSelectorCollectionViewController(collectionViewLayout: layout)
             let photoSelectorNaviVC = UINavigationController(rootViewController: photoSelectorCVC)
             present(photoSelectorNaviVC, animated: true, completion: nil)
+            
         }
         return true
     }

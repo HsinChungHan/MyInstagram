@@ -46,36 +46,51 @@ class PhotoSelectorCollectionViewController: UICollectionViewController {
     }
     
     var images = [UIImage]()
-    fileprivate func fetchPhotos(){
+    var assets = [PHAsset]()
+    fileprivate func fetchOptions() -> PHFetchOptions{
         let fetchOptions = PHFetchOptions()
         //一開始最多抓取十張照片
-        fetchOptions.fetchLimit = 10
+        fetchOptions.fetchLimit = 1000
         //這邊可以設定圖片的先後順序，in the decending order
         let sortDescriptor = NSSortDescriptor(key: "creationDate", ascending: false)
         fetchOptions.sortDescriptors = [sortDescriptor]
-        
-        let allPhotos = PHAsset.fetchAssets(with: .image, options: fetchOptions)
-        allPhotos.enumerateObjects {[weak self] (asset, count, stop) in
-            //asset: 抓取照片的地方; count: 抓了多少照片;
-            //在這邊處理抓取到照片
-            let imgManager = PHImageManager.default()
-            let targetSize = CGSize(width: 350, height: 350)
-            //讓圖片同步出現(也就是說等圖片都從asset抓取完後才會做別的事情)Ep13 07:30
-            let options = PHImageRequestOptions()
-            options.isSynchronous = true
-            imgManager.requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFit , options: options, resultHandler: { (image, info) in
-                if let img = image{
-                     self?.images.append(img)
-                }
-                
-                //Ep13 12:00
-                //因為count是從0開始，而allPhotos.count=10，所以當所有的照片從asset撈出來後，count = 9
-                //因此count == allPhotos.count - 1代表當所有照片都撈完後，執行collectionView?.reloadData()
-                if count == allPhotos.count - 1{
-                     self?.collectionView?.reloadData()
-                }
-            })
+        return fetchOptions
+    }
+    fileprivate func fetchPhotos(){
+        let allPhotos = PHAsset.fetchAssets(with: .image, options: fetchOptions())
+        DispatchQueue.global(qos: .background).async {
+            allPhotos.enumerateObjects {[weak self] (asset, count, stop) in
+                //asset: 抓取照片的地方; count: 抓了多少照片;
+                //在這邊處理抓取到照片
+                let imgManager = PHImageManager.default()
+                //為了加快fetch photo的速度，我們可以抓小一點到照片
+                //然後等到真正選到那張照片，在讓header的imgView去抓取assets中的原檔圖片去refresh
+                let targetSize = CGSize(width: 200, height: 200)
+                //讓圖片同步出現(也就是說等圖片都從asset抓取完後才會做別的事情)Ep13 07:30
+                let options = PHImageRequestOptions()
+                options.isSynchronous = true
+                imgManager.requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFit , options: options, resultHandler: { (image, info) in
+                    if let img = image{
+                        self?.images.append(img)
+                        self?.assets.append(asset)
+                        if self?.selectedImage == nil{
+                            //為headerView預設一張圖片
+                            self?.selectedImage = img
+                        }
+                    }
+                    
+                    //Ep13 12:00
+                    //因為count是從0開始，而allPhotos.count=10，所以當所有的照片從asset撈出來後，count = 9
+                    //因此count == allPhotos.count - 1代表當所有照片都撈完後，執行collectionView?.reloadData()
+                    if count == allPhotos.count - 1{
+                        DispatchQueue.main.async {
+                            self?.collectionView?.reloadData()
+                        }
+                    }
+                })
+            }
         }
+        
     }
     
 //Mark: CollectionViewDelegate, CollectionViewDataSource
@@ -89,19 +104,29 @@ class PhotoSelectorCollectionViewController: UICollectionViewController {
         return cell
     }
     
-    var header: PhotoSelectorHeaderCell?
+    
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! PhotoSelectorHeaderCell
-        if images.count > 0{
-            header?.image = images[0]
+        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! PhotoSelectorHeaderCell
+        
+        if let selectedImage = selectedImage{
+            if let index = self.images.index(of: selectedImage){
+                let imgManager = PHImageManager.default()
+                let options = PHImageRequestOptions()
+                options.isSynchronous = true
+                let size = CGSize(width: 600, height: 600)
+                let selectedAsset = assets[index]
+                imgManager.requestImage(for: selectedAsset, targetSize: size, contentMode: .default, options: options) { (image, info) in
+                    header.imageView.image = image
+                }
+            }
         }
-
-        return header!
+        return header
     }
     
+    var selectedImage: UIImage?
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        header?.image = images[indexPath.item]
-        print(indexPath.item)
+        selectedImage = images[indexPath.item]
+        collectionView.reloadData()
     }
 }
 
