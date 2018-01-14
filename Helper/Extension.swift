@@ -55,4 +55,9 @@ extension UIView{
             heightAnchor.constraint(equalToConstant: height).isActive = true
         }
     }
+    
+    
+    func fullAnchor(super view: UIView) {
+        anchor(top: view.topAnchor, topPadding: 0, bottom: view.bottomAnchor, bottomPadding: 0, left: view.leftAnchor, leftPadding: 0, right: view.rightAnchor, rightPadding: 0, width: 0, height: 0)
+    }
 }

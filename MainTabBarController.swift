@@ -15,6 +15,8 @@ class MainTabBarController: UITabBarController {
         if isUserLogIn(){
             setupViewController()
         }
+        
+        self.delegate = self
     }
     
     
@@ -43,16 +45,16 @@ class MainTabBarController: UITabBarController {
     
         //plus tab
         let plusVC = UIViewController()
-        let plusNaviVC = templateNaviViewController(rootViewController: plusVC, unselectedImage: "plus_unselected", selectedImage: "plus_selected")
+        let plusNaviVC = templateNaviViewController(rootViewController: plusVC, unselectedImage: "plus_unselected", selectedImage: "")
         
         //like tab
         let likeVC = UIViewController()
-        let likeNaviVC = templateNaviViewController(rootViewController: likeVC, unselectedImage: "like_unselected", selectedImage: "")
+        let likeNaviVC = templateNaviViewController(rootViewController: likeVC, unselectedImage: "like_unselected", selectedImage: "like_selected")
         
         //user profile tab
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-        let userProfileVC = UserProfileViewController(collectionViewLayout: layout)
+        let userProfileVC = UserProfileCollectionViewController(collectionViewLayout: layout)
         let userProfileNaviVC = templateNaviViewController(rootViewController: userProfileVC, unselectedImage: "profile_unselected", selectedImage: "profile_selected")
         
         viewControllers = [homeNaviVC, searchNaviVC, plusNaviVC, likeNaviVC, userProfileNaviVC]
@@ -77,3 +79,23 @@ class MainTabBarController: UITabBarController {
         return naviVC
     }
 }
+
+
+//MARK: UITabBarControllerDelegate
+extension MainTabBarController: UITabBarControllerDelegate{
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        //false: 讓tabBar的分頁不能被選擇
+        let index = viewControllers?.index(of: viewController)
+        if index == 2{
+            let layout = UICollectionViewFlowLayout()
+            layout.scrollDirection = .vertical
+            let photoSelectorCVC = PhotoSelectorCollectionViewController(collectionViewLayout: layout)
+            let photoSelectorNaviVC = UINavigationController(rootViewController: photoSelectorCVC)
+            present(photoSelectorNaviVC, animated: true, completion: nil)
+        }
+        return true
+    }
+}
+
+
+

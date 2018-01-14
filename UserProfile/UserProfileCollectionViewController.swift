@@ -8,7 +8,7 @@
 
 import UIKit
 import Firebase
-class UserProfileViewController: UICollectionViewController {
+class UserProfileCollectionViewController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -21,6 +21,7 @@ class UserProfileViewController: UICollectionViewController {
         collectionView?.backgroundColor = .white
         navigationItem.title = "User Profile"
         let rightBarItem = UIBarButtonItem(image: UIImage(named: "gear"), style: .plain, target: self, action: #selector(handleLogOutButton))
+        
         rightBarItem.tintColor = .black
         navigationItem.rightBarButtonItem = rightBarItem
     
@@ -88,7 +89,7 @@ class UserProfileViewController: UICollectionViewController {
 }
 
 
-extension UserProfileViewController: UICollectionViewDelegateFlowLayout{
+extension UserProfileCollectionViewController: UICollectionViewDelegateFlowLayout{
    //去調整header大小
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: view.frame.width, height: 200)
