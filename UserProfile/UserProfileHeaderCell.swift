@@ -10,8 +10,8 @@ import UIKit
 import Firebase
 class UserProfileHeaderCell: BasicCell {
     
-    let profileImageView: UIImageView = {
-       let imgView = UIImageView()
+    let profileImageView: CustomImageView = {
+       let imgView = CustomImageView()
         imgView.contentMode = .scaleAspectFill
         imgView.clipsToBounds = true
         return imgView
@@ -170,34 +170,10 @@ class UserProfileHeaderCell: BasicCell {
     
     var user: CurrentUser? {
         didSet{
-            setupProfileImage()
             userNameLabel.text = user?.userName
+            guard let imgUrlStr = user?.profileImageUrl else {return}
+            profileImageView.loadImage(urlString: imgUrlStr)
         }
-    }
-    fileprivate func setupProfileImage(){
-        guard let user = self.user else {
-            print("No user")
-            return
-        }
-        print("user: ", user)
-        guard let imageUrl = URL(string: user.profileImageUrl) else {
-            print("No url")
-            return
-            
-        }
-        URLSession.shared.dataTask(with: imageUrl) { (data, response, error) in
-            if let err = error {
-                print("Failed to get img url: ",err)
-                return
-            }
-            guard let data = data else{
-                print("No data")
-                return
-            }
-            DispatchQueue.main.async {
-                self.profileImageView.image = UIImage(data: data)
-            }
-        }.resume()
     }
 }
 

@@ -16,7 +16,12 @@ class UserProfileCollectionViewController: UICollectionViewController {
         setupNavigationBar()
         fetchUser()
         registerCell()
-        fetchUserPosts()
+        //這是不照順序抓取post的方式(因為一次抓全部的posts):dbRef.observeSingleEvent
+//        fetchUserPosts()
+        //這是照child被加入DB的順序，抓取post的方式:dbRef.observe(childAdded)
+        //會等到每次有post加入時，會等到那個post上傳到DB後，才會去下載
+        //也解決了在PhotoSelector share出一篇新文章後，立即到UserProfile所出現的bug
+        fetchOrderedPosts()
     }
     
     func setupNavigationBar() {
@@ -60,10 +65,31 @@ class UserProfileCollectionViewController: UICollectionViewController {
     }
     
     var posts = [Post]()
+    fileprivate func fetchOrderedPosts(){
+        guard let currentUserId = Auth.auth().currentUser?.uid else {return}
+        let dbRef = Database.database().reference(fromURL: DB_BASEURL).child("posts").child(currentUserId)
+        //可以依照child來排列順序
+        //perhaps later on we'll impleent somre pagination of data
+        dbRef.queryOrdered(byChild: "creationDate") .observe(.childAdded , with: { (snapshot) in
+            //snapshot.key是所有的postId，snapshot.value就是每個post的內容
+            guard let dictionary = snapshot.value as? [String : Any] else {return}
+            let post = Post.init(dictionary: dictionary)
+            self.posts.append(post)
+            self.collectionView?.reloadData()
+        }) { (error) in
+            print("Failed to fetch the posts form DB: ", error.localizedDescription)
+        }
+    }
+    
+    
+    
+    
     fileprivate func fetchUserPosts(){
         guard let currentUserId = Auth.auth().currentUser?.uid else {return}
         let dbRef = Database.database().reference(fromURL: DB_BASEURL).child("posts").child(currentUserId)
         dbRef.observe(.value, with: { (snapshot) in
+            //這邊的snapshot.key就是一個uid，所以 snapshot.value就是uid下的node
+            //要對照資料庫看
             guard let dictionaries = snapshot.value as? [String : Any] else {return}
             dictionaries.forEach({ (key, value) in
                 guard let dictionary = value as? [String : Any] else {return}
@@ -73,7 +99,6 @@ class UserProfileCollectionViewController: UICollectionViewController {
             self.collectionView?.reloadData()
         }) { (error) in
             print("Failed to fetch the posts form DB: ", error.localizedDescription)
-            return
         }
     }
     
