@@ -28,6 +28,9 @@ class UserProfileCollectionViewController: UICollectionViewController {
     }
     @objc func handleLogOutButton(){
         let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        //Instagram is iPhone only. If someone might want to use the UIAlertController as an actionSheet on an iPad be aware that you will need to add(加了下面那行後，他會從rightBarButtonItem那pop出來)
+        // added for iPad
+        alertController.popoverPresentationController?.barButtonItem = self.navigationItem.rightBarButtonItem
         
         alertController.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { (_) in
             do{
@@ -36,16 +39,21 @@ class UserProfileCollectionViewController: UICollectionViewController {
                 let logInVC = LogInViewController()
                 let naviVC = UINavigationController(rootViewController: logInVC)
                 self.present(naviVC, animated: true, completion: nil)
-                
+
             }catch let signOutErr{
                 print("Failed to sign out: ", signOutErr.localizedDescription)
             }
         }))
-        
+
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (_) in
             self.dismiss(animated: true, completion: nil)
         }))
         present(alertController, animated: true, completion: nil)
+
+        
+        
+        
+        
     }
     
     

@@ -15,6 +15,8 @@ class SignUpViewController: UIViewController{
     lazy var plusPhotoButton: UIButton = {
         let btn = UIButton(type: .system)
         btn.setImage(#imageLiteral(resourceName: "plus_photo").withRenderingMode(.alwaysOriginal) , for: .normal)
+        btn.imageView?.contentMode = .scaleAspectFill
+        btn.imageView?.clipsToBounds = true
         btn.addTarget(self, action: #selector(handlePlusPhototButton), for: .touchUpInside)
         return btn
     }()
@@ -81,12 +83,12 @@ class SignUpViewController: UIViewController{
         btn.layer.masksToBounds = true
         btn.backgroundColor = UIColor.rgb(red: 149, green: 204, blue: 244)
         btn.titleLabel?.font = UIFont.boldSystemFont(ofSize: 14)
-        btn.addTarget(self, action: #selector(handleSignInButton), for: .touchUpInside)
+        btn.addTarget(self, action: #selector(handleSignUpButton), for: .touchUpInside)
         //先預設btn一開始都不能按，一直等到user把表格全填完才可按
         btn.isEnabled = false
         return btn
     }()
-    @objc func handleSignInButton(){
+    @objc func handleSignUpButton(){
         
         guard let name = userNameTextField.text, name.characters.count > 0,
             let email = emailTextField.text, email.characters.count > 0,
@@ -108,9 +110,9 @@ class SignUpViewController: UIViewController{
             guard let userName = self.userNameTextField.text else{return}
             let imageName = userName + "--" + NSUUID().uuidString
             //這邊要加入storage的url
-            let storageRef = Storage.storage().reference(forURL: "gs://instagram-ee809.appspot.com/").child("profile_image--\(imageName).jpg")
             
-            storageRef.putData(uploadData, metadata: nil, completion: { (metadata, err) in
+            let storageRef = Storage.storage().reference().child("profile_image")
+            storageRef.child("\(imageName).jpg").putData(uploadData, metadata: nil, completion: { (metadata, err) in
                 if let err = err{
                     print("Failed to upload imaage into db: ", err)
                     return
@@ -119,7 +121,7 @@ class SignUpViewController: UIViewController{
                 print("Successfully upload profile image: ", profileImgUrl)
                 
                 //upload user information into DB
-                let dbRef = Database.database().reference(fromURL: "https://instagram-ee809.firebaseio.com/")
+                let dbRef = Database.database().reference(fromURL: DB_BASEURL)
                 let usersRef = dbRef.child("users").child(user.uid)
                 let dictionaryValues = ["userName" : name, "email" : email, "password" : password, "profileImageUrl" : profileImgUrl]
                 usersRef.updateChildValues(dictionaryValues, withCompletionBlock: { (err, ref) in

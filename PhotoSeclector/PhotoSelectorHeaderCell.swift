@@ -10,8 +10,8 @@ import UIKit
 
 class PhotoSelectorHeaderCell: BasicCell {
     var image: UIImage?{
-        willSet{
-            imageView.image = newValue
+        didSet{
+            imageView.image = image
         }
     }
     let imageView: UIImageView = {

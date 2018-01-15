@@ -42,7 +42,9 @@ class PhotoSelectorCollectionViewController: UICollectionViewController {
     }
     
     @objc func handleNextItem(){
-        
+        let sharePhotoVC = SharePhotoViewController()
+        sharePhotoVC.selectedImage = header?.imageView.image
+        navigationController?.pushViewController(sharePhotoVC, animated: true)
     }
     
     var images = [UIImage]()
@@ -50,7 +52,7 @@ class PhotoSelectorCollectionViewController: UICollectionViewController {
     fileprivate func fetchOptions() -> PHFetchOptions{
         let fetchOptions = PHFetchOptions()
         //一開始最多抓取十張照片
-        fetchOptions.fetchLimit = 1000
+        fetchOptions.fetchLimit = 100
         //這邊可以設定圖片的先後順序，in the decending order
         let sortDescriptor = NSSortDescriptor(key: "creationDate", ascending: false)
         fetchOptions.sortDescriptors = [sortDescriptor]
@@ -104,10 +106,11 @@ class PhotoSelectorCollectionViewController: UICollectionViewController {
         return cell
     }
     
-    
+    //為了將這個header中的圖片能傳到sharePhotoViewController
+    var header: PhotoSelectorHeaderCell?
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! PhotoSelectorHeaderCell
-        
+        self.header = header
         if let selectedImage = selectedImage{
             if let index = self.images.index(of: selectedImage){
                 let imgManager = PHImageManager.default()
@@ -127,6 +130,11 @@ class PhotoSelectorCollectionViewController: UICollectionViewController {
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         selectedImage = images[indexPath.item]
         collectionView.reloadData()
+        
+        //scroll to header view，有兩種方法
+//        collectionView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: true)
+        let indexPath = IndexPath(item: 0, section: 0)
+        collectionView.scrollToItem(at: indexPath, at: .bottom, animated: true)
     }
 }
 
