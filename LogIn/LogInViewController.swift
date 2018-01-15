@@ -70,8 +70,8 @@ class LogInViewController: UIViewController{
         return textField
     }()
     @objc func handleTextInputChange(){
-        let isFormValid = emailTextField.text?.characters.count ?? 0 > 0 &&
-            passwordTextField.text?.characters.count ?? 0 > 0
+        let isFormValid = emailTextField.text?.count ?? 0 > 0 &&
+            passwordTextField.text?.count ?? 0 > 0
         if isFormValid{
             logInButton.backgroundColor = UIColor.rgb(red: 17, green: 154, blue: 237)
             logInButton.isEnabled = true

@@ -43,8 +43,8 @@ class SignUpViewController: UIViewController{
         return textField
     }()
     @objc func handleTextInputChange(){
-        let isFormValid = emailTextField.text?.characters.count ?? 0 > 0 && userNameTextField.text?.characters.count ?? 0 > 0 &&
-            passwordTextField.text?.characters.count ?? 0 > 0
+        let isFormValid = emailTextField.text?.count ?? 0 > 0 && userNameTextField.text?.count ?? 0 > 0 &&
+            passwordTextField.text?.count ?? 0 > 0
         if isFormValid{
             signUpButton.backgroundColor = UIColor.rgb(red: 17, green: 154, blue: 237)
             signUpButton.isEnabled = true
@@ -90,9 +90,9 @@ class SignUpViewController: UIViewController{
     }()
     @objc func handleSignUpButton(){
         
-        guard let name = userNameTextField.text, name.characters.count > 0,
-            let email = emailTextField.text, email.characters.count > 0,
-            let password = passwordTextField.text, password.characters.count > 0
+        guard let name = userNameTextField.text, name.count > 0,
+            let email = emailTextField.text, email.count > 0,
+            let password = passwordTextField.text, password.count > 0
             else {
                 print("Check the form!")
                 return

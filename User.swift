@@ -8,7 +8,7 @@
 
 import Foundation
 class CurrentUser: Codable {
-    let email , password , profileImageUrl , userName  : String
+    let email, password, profileImageUrl, userName  : String
     init(dictionary: [String : Any]) {
         self.email = dictionary["email"] as? String ?? ""
         self.password = dictionary["password"] as? String ?? ""

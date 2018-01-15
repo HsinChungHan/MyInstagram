@@ -60,8 +60,7 @@ class SharePhotoViewController: UIViewController {
         guard let uploadData = UIImageJPEGRepresentation(image, 0.8) else {return}
         let fileName = NSUUID().uuidString
         let storageRef = Storage.storage().reference().child("post")
-        
-        storageRef.child(fileName).putData(uploadData, metadata: nil) { (metadata, error) in
+        storageRef.child("\(fileName).jpg").putData(uploadData, metadata: nil) { (metadata, error) in
             if let err = error{
                 self.navigationItem.rightBarButtonItem?.isEnabled = true
                 print("Failed to upload the post image to Strorage: ", err.localizedDescription)
@@ -72,7 +71,6 @@ class SharePhotoViewController: UIViewController {
             print("Successfully upload post image to Strorage: ", imgUrl)
             
             self.savePostToDBWithImageUrl(imageUrl: imgUrl)
-            
         }
         //讓使用者按過一次後就不能再按了，防止他多次點擊，送出多篇重複文章
         //若有錯誤發生的話還是要讓使用者可以再次點擊button，所以要再err那再加入
@@ -95,7 +93,7 @@ class SharePhotoViewController: UIViewController {
                 return
             }
             print("Successfully upload post to DB: ", dataRef)
-            self.dismiss(animated: true, completion: nil)
+                self.dismiss(animated: true, completion: nil)
         }
         
     }
@@ -115,9 +113,6 @@ class SharePhotoViewController: UIViewController {
         
     }
 }
-
-
-
 
 
 extension SharePhotoViewController: UITextViewDelegate{
