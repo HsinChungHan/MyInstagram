@@ -12,11 +12,18 @@ class MainTabBarController: UITabBarController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if isUserLogIn(){
-            setupViewController()
+        if Auth.auth().currentUser == nil{
+            //Ep8 12:00
+            DispatchQueue.main.async {//在console區，會出現view不在window hirachy
+                let loginVC = LogInViewController()
+                let naviVC = UINavigationController(rootViewController: loginVC)
+                self.present(naviVC, animated: true, completion: nil)
+            }
+            return
         }
         
         self.delegate = self
+        setupViewController()
     }
     
     
@@ -35,9 +42,12 @@ class MainTabBarController: UITabBarController {
     }
     
     func setupViewController(){
+        
         //home tab
-        let homeVC = UIViewController()
-         let homeNaviVC = templateNaviViewController(rootViewController: homeVC, unselectedImage: "home_unselected", selectedImage: "home_selected")
+        let homeVCLayout = UICollectionViewFlowLayout()
+        homeVCLayout.scrollDirection = .vertical
+        let homeVC = HomeFeedCollectionViewController(collectionViewLayout: homeVCLayout)
+        let homeNaviVC = templateNaviViewController(rootViewController: homeVC, unselectedImage: "home_unselected", selectedImage: "home_selected")
         
         //search tab
         let searchVC = UIViewController()
@@ -52,12 +62,16 @@ class MainTabBarController: UITabBarController {
         let likeNaviVC = templateNaviViewController(rootViewController: likeVC, unselectedImage: "like_unselected", selectedImage: "like_selected")
         
         //user profile tab
-        let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .vertical
-        let userProfileVC = UserProfileCollectionViewController(collectionViewLayout: layout)
+        let userProfileVCLayout = UICollectionViewFlowLayout()
+        userProfileVCLayout.scrollDirection = .vertical
+        let userProfileVC = UserProfileCollectionViewController(collectionViewLayout: userProfileVCLayout)
         let userProfileNaviVC = templateNaviViewController(rootViewController: userProfileVC, unselectedImage: "profile_unselected", selectedImage: "profile_selected")
         
-        viewControllers = [homeNaviVC, searchNaviVC, plusNaviVC, likeNaviVC, userProfileNaviVC]
+        viewControllers = [homeNaviVC,
+                           searchNaviVC,
+                           plusNaviVC,
+                           likeNaviVC,
+                           userProfileNaviVC]
         
         //因為icom預設在tab bar中，是中間偏上，所以我們要用程式碼的方式調整位置
         //modify tab bar item inset
@@ -88,11 +102,10 @@ extension MainTabBarController: UITabBarControllerDelegate{
         let index = viewControllers?.index(of: viewController)
         if index == 2{
             let layout = UICollectionViewFlowLayout()
-            layout.scrollDirection = .vertical
             let photoSelectorCVC = PhotoSelectorCollectionViewController(collectionViewLayout: layout)
             let photoSelectorNaviVC = UINavigationController(rootViewController: photoSelectorCVC)
             present(photoSelectorNaviVC, animated: true, completion: nil)
-            
+            return false
         }
         return true
     }

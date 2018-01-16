@@ -24,6 +24,8 @@ class UserProfileCollectionViewController: UICollectionViewController {
         fetchOrderedPosts()
     }
     
+   
+    
     func setupNavigationBar() {
         collectionView?.backgroundColor = .white
         navigationItem.title = "User Profile"
@@ -62,6 +64,7 @@ class UserProfileCollectionViewController: UICollectionViewController {
     private func registerCell() {
         collectionView?.register(UserProfileHeaderCell.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerId)
         collectionView?.register(UserProfilePhotoCell.self, forCellWithReuseIdentifier: userProfilePhotoCellId)
+
     }
     
     var posts = [Post]()
@@ -70,7 +73,7 @@ class UserProfileCollectionViewController: UICollectionViewController {
         let dbRef = Database.database().reference(fromURL: DB_BASEURL).child("posts").child(currentUserId)
         //可以依照child來排列順序
         //perhaps later on we'll impleent somre pagination of data
-        dbRef.queryOrdered(byChild: "creationDate") .observe(.childAdded , with: { (snapshot) in
+        dbRef.queryOrdered(byChild: "creationDate").observe(.childAdded , with: { (snapshot) in
             //snapshot.key是所有的postId，snapshot.value就是每個post的內容
             guard let dictionary = snapshot.value as? [String : Any] else {return}
             let post = Post.init(dictionary: dictionary)

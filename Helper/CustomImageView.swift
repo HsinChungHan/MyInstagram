@@ -7,10 +7,17 @@
 //
 
 import UIKit
+var imageCache = [String : UIImage]()
 class CustomImageView: UIImageView{
     var lastUrlUsedToLoadImage: String?
     func loadImage(urlString: String) {
         lastUrlUsedToLoadImage = urlString
+        //每次都先到cache檢查一遍，看有沒有在cache存過這個url圖片
+        if let cachedImage = imageCache[urlString]{
+            self.image = cachedImage
+            return
+        }
+        
         guard let url = URL(string: urlString) else {return}
         URLSession.shared.dataTask(with: url) { (data, response, error) in
             if let err = error{
@@ -28,9 +35,19 @@ class CustomImageView: UIImageView{
                 return
             }
             guard let image = UIImage(data: data) else {return}
+            //Ep 19 17:10有提到collection view會一直在background去fetch圖片，浪費網路流量，所以要用cache解決
+            //可以在console區打指令: "po imageCache" (print object imageCache)
+            imageCache[url.absoluteString] = image
+            
             DispatchQueue.main.async {
                 self.image = image
             }
             }.resume()
     }
+    
+    func scaleAspectFill() {
+        contentMode = .scaleAspectFill
+        clipsToBounds = true
+    }
+    
 }
