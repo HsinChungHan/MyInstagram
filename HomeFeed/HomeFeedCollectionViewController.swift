@@ -7,6 +7,10 @@
 
 import UIKit
 import Firebase
+
+
+
+
 class HomeFeedCollectionViewController: UICollectionViewController {
 
     let cellId = "HomePostCellId"
@@ -42,46 +46,25 @@ class HomeFeedCollectionViewController: UICollectionViewController {
     }
     
     var posts = [Post]()
+    
     fileprivate func fetchUserPosts(){
         guard let currentUserId = Auth.auth().currentUser?.uid else {return}
-        let dbRef = Database.database().reference(fromURL: DB_BASEURL)
-        
-        //to fetch who post
-        dbRef.child("users").child(currentUserId).observe(.value, with: { (snapshot) in
-            guard let dictionaries = snapshot.value as? [String : Any] else {return}
-            if let userName = dictionaries["userName"] as? String,
-                let profileImgUrl = dictionaries["profileImageUrl"] as? String{
-               
-                let user = TheUser(dictionary: ["userName" : userName, "profileImageUrl": profileImgUrl])
-                //to fetch the posts
-                dbRef.child("posts").child(currentUserId).observe(.value, with: { (snapshot) in
-                    guard let dictionaries = snapshot.value as? [String : Any] else {return}
-                    dictionaries.forEach({ (key, value) in
-                        guard let dictionary = value as? [String : Any] else {return}
-                        let post = Post.init(dictionary: dictionary, user: user)
-                        //使用append會把新的element加到array尾端，若要讓新的element在array的開頭，需要使用insert
-                        self.posts.insert(post, at: 0)
-//                        self.posts.append(post)
-                    })
-                    self.collectionView?.reloadData()
-                }) { (error) in
-                    print("Failed to fetch the posts form DB: ", error.localizedDescription)
-                }
-            }
-        }) { (error) in
-            print("Failed to fetch who post: ", error)
+        Database.fetchUserWithUID(uid: currentUserId) { (user) in
+            self.fetchPostWithUser(user: user)
         }
     }
     
-    fileprivate func fetchWhoPost(dbRef: DatabaseReference, userId: String, completionHandler: @escaping (_ user: TheUser?)->()){
-        var user: TheUser?
-        dbRef.child("users").child(userId).observeSingleEvent(of: .value) { (snapshot) in
-            guard let dictionaries = snapshot.value as? [String : Any] else {return}
-            
-            if let userName = dictionaries["userName"] as? String{
-                user = TheUser(dictionary: ["userName" : userName])
-            }
-            completionHandler(user)
+    fileprivate func fetchPostWithUser(user: TheUser){
+        let uid = user.uid
+         let dbRef = Database.database().reference(fromURL: DB_BASEURL)
+        dbRef.child("posts").child(uid).observe(.childAdded, with: { (snapshot) in
+            guard let dictionary = snapshot.value as? [String : Any] else {return}
+            let post = Post.init(dictionary: dictionary, user: user)
+            //使用append會把新的element加到array尾端，若要讓新的element在array的開頭，需要使用insert
+            self.posts.insert(post, at: 0)
+            self.collectionView?.reloadData()
+        }) { (error) in
+            print("Failed to fetch Post: ", error)
         }
     }
     
