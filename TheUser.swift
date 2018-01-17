@@ -7,7 +7,7 @@
 //
 
 import Foundation
-class CurrentUser {
+class TheUser {
     let email, password, profileImageUrl, userName  : String
     init(dictionary: [String : Any]) {
         self.email = dictionary["email"] as? String ?? ""

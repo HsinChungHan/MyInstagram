@@ -168,7 +168,7 @@ class UserProfileHeaderCell: BasicCell {
         editPorfileButton.anchor(top: postLabel.bottomAnchor, topPadding: 12, bottom: profileImageView.bottomAnchor, bottomPadding: 0, left: profileImageView.rightAnchor, leftPadding: 10, right: rightAnchor, rightPadding: 10, width: 0, height: 0)
     }
     
-    var user: CurrentUser? {
+    var user: TheUser? {
         didSet{
             userNameLabel.text = user?.userName
             guard let imgUrlStr = user?.profileImageUrl else {return}

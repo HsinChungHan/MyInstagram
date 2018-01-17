@@ -70,14 +70,16 @@ class UserProfileCollectionViewController: UICollectionViewController {
     var posts = [Post]()
     fileprivate func fetchOrderedPosts(){
         guard let currentUserId = Auth.auth().currentUser?.uid else {return}
+        
         let dbRef = Database.database().reference(fromURL: DB_BASEURL).child("posts").child(currentUserId)
         //可以依照child來排列順序
         //perhaps later on we'll impleent somre pagination of data
         dbRef.queryOrdered(byChild: "creationDate").observe(.childAdded , with: { (snapshot) in
             //snapshot.key是所有的postId，snapshot.value就是每個post的內容
             guard let dictionary = snapshot.value as? [String : Any] else {return}
-            let post = Post.init(dictionary: dictionary)
-            self.posts.append(post)
+            let dummyUser = TheUser(dictionary: ["userName" : "dummy"])
+            let post = Post.init(dictionary: dictionary, user: dummyUser)
+            self.posts.insert(post, at: 0)
             self.collectionView?.reloadData()
         }) { (error) in
             print("Failed to fetch the posts form DB: ", error.localizedDescription)
@@ -96,7 +98,7 @@ class UserProfileCollectionViewController: UICollectionViewController {
             guard let dictionaries = snapshot.value as? [String : Any] else {return}
             dictionaries.forEach({ (key, value) in
                 guard let dictionary = value as? [String : Any] else {return}
-                let post = Post.init(dictionary: dictionary)
+                let post = Post.init(dictionary: dictionary, user: self.theUser!)
                 self.posts.append(post)
             })
             self.collectionView?.reloadData()
@@ -111,7 +113,7 @@ class UserProfileCollectionViewController: UICollectionViewController {
     //設定header，要記得去調整header的大小，還有register header
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! UserProfileHeaderCell
-        header.user = currentUser
+        header.user = theUser
         return header
     }
     
@@ -127,15 +129,15 @@ class UserProfileCollectionViewController: UICollectionViewController {
         return cell
     }
     
-    var currentUser: CurrentUser?
+    var theUser: TheUser?
     fileprivate func fetchUser() {
         guard let currentUserId = Auth.auth().currentUser?.uid else{return}
         let ref = Database.database().reference().child("users").child("\(currentUserId)")
         //.value:取得值
         ref.observe(.value, with: { (snapshot) in
             guard let dictionary = snapshot.value as? [String : Any] else {return}
-            self.currentUser = CurrentUser(dictionary: dictionary)
-            guard let user =  self.currentUser else {return}
+            self.theUser = TheUser(dictionary: dictionary)
+            guard let user =  self.theUser else {return}
             self.navigationItem.title = user.userName
             self.collectionView?.reloadData()
         }) { (error) in

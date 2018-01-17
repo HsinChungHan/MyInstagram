@@ -14,13 +14,15 @@ class Post{
     let height: Int
     let width: Int
     let postImageUrl: String
+    let user: TheUser
     
-    init(dictionary: [String : Any]) {
+    init(dictionary: [String : Any], user: TheUser) {
         self.postImageUrl = dictionary["postImageUrl"] as? String ?? ""
-        self.caption = dictionary["postImageUrl"] as? String ?? ""
+        self.caption = dictionary["caption"] as? String ?? ""
         self.height = dictionary["height"] as? Int ?? 0
         self.width = dictionary["width"] as? Int ?? 0
         self.creationDate = dictionary["creationDate"] as? Date
+        self.user = user
     }
     
 }

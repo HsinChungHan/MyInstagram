@@ -11,10 +11,46 @@ import UIKit
 class HomePostCell: BasicCell {
     var post: Post?{
         didSet{
-            guard let imgUrl = post?.postImageUrl else {return}
-            photoImageView.loadImage(urlString: imgUrl)
+            guard let photoImgUrl = post?.postImageUrl else {return}
+            
+            photoImageView.loadImage(urlString: photoImgUrl)
+            
+            guard let userName =  post?.user.userName else {return}
+            
+            userNameLabel.text = userName
+            
+            guard let profileImgUrl = post?.user.profileImageUrl else {return}
+            
+            userProfileImageView.loadImage(urlString: profileImgUrl)
+            
+            guard let post = post else {return}
+            setupAttributedCaption(post: post)
+            
         }
     }
+    fileprivate func setupAttributedCaption(post: Post){
+        let userName = post.user.userName
+        let caption = post.caption
+        let creationDate = post.creationDate
+        
+        let attributedText = NSMutableAttributedString(string: userName, attributes: [
+            NSAttributedStringKey.font : UIFont.boldSystemFont(ofSize: 14)
+            ])
+        attributedText.append(NSMutableAttributedString(string: " \(caption)", attributes: [
+            NSAttributedStringKey.font : UIFont.systemFont(ofSize: 14)
+            ]))
+        
+        //在文章和creation time 中間創造一個小段落
+        attributedText.append(NSMutableAttributedString(string: "\n\n", attributes: [
+            NSAttributedStringKey.font : UIFont.systemFont(ofSize: 4)
+            ]))
+        
+        attributedText.append(NSMutableAttributedString(string: "creationTime", attributes: [NSAttributedStringKey.font : UIFont.systemFont(ofSize: 14),
+             NSAttributedStringKey.foregroundColor : UIColor.gray
+            ]))
+        captionLabel.attributedText = attributedText
+    }
+    
     
     let userStateView: UIView = {
        let view = UIView()
@@ -25,7 +61,7 @@ class HomePostCell: BasicCell {
     let userProfileImageView: CustomImageView = {
        let civ = CustomImageView()
         civ.scaleAspectFill()
-        civ.image = UIImage(named: "irene")
+        civ.image = UIImage(named: "test user name")
 
         return civ
     }()
@@ -84,22 +120,7 @@ class HomePostCell: BasicCell {
     lazy var captionLabel: UILabel = {
         let label = UILabel()
         if let userName = userNameLabel.text{
-            let attributedText = NSMutableAttributedString(string: userName, attributes: [
-                NSAttributedStringKey.font : UIFont.boldSystemFont(ofSize: 14)
-                ])
-            attributedText.append(NSMutableAttributedString(string: " Something will be written here. You need to type more words when updating the new post!!", attributes: [
-                NSAttributedStringKey.font : UIFont.systemFont(ofSize: 14)
-                ]))
-            
-            //在文章和creation time 中間創造一個小段落
-            attributedText.append(NSMutableAttributedString(string: "\n\n", attributes: [
-                NSAttributedStringKey.font : UIFont.systemFont(ofSize: 4)
-                ]))
-            
-            attributedText.append(NSMutableAttributedString(string: "1 week ago", attributes: [NSAttributedStringKey.font : UIFont.systemFont(ofSize: 14),
-                 NSAttributedStringKey.foregroundColor : UIColor.gray
-                ]))
-            label.attributedText = attributedText
+           
         }
         
         label.numberOfLines = 0
