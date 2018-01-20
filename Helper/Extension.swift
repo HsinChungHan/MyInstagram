@@ -61,3 +61,41 @@ extension UIView{
         anchor(top: view.topAnchor, topPadding: 0, bottom: view.bottomAnchor, bottomPadding: 0, left: view.leftAnchor, leftPadding: 0, right: view.rightAnchor, rightPadding: 0, width: 0, height: 0)
     }
 }
+
+extension Date{
+    func timeAgoDisplay() -> String{
+        let secondsAgo = Int(Date().timeIntervalSince(self))
+        let minute = 60
+        let hour = 60 * minute
+        let day = 24 * hour
+        let week = 7 * day
+        let month = 4 * week
+        let quotient: Int
+        let unit: String
+        if secondsAgo < minute{
+            quotient = secondsAgo
+            unit = "seconds"
+        }else if secondsAgo < hour{
+            quotient = secondsAgo / minute
+            unit = "hours"
+        }else if secondsAgo < day{
+            quotient = secondsAgo / hour
+            unit = "days"
+        }else if secondsAgo < week{
+            quotient = secondsAgo / day
+            unit = "weeks"
+        }else if secondsAgo < month{
+            quotient = secondsAgo / week
+            unit = "months"
+        }else{
+            quotient = 0
+            unit = ""
+        }
+        
+        return "\(quotient) \(unit) ago"
+    }
+}
+
+
+
+

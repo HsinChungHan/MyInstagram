@@ -50,4 +50,9 @@ class CustomImageView: UIImageView{
         clipsToBounds = true
     }
     
+    func beRoundImage(radius: CGFloat) {
+        layer.cornerRadius = radius / 2
+        layer.masksToBounds = true
+    }
+    
 }

@@ -9,25 +9,23 @@
 import UIKit
 import Firebase
 
-
-
-
-
-
 class UserProfileCollectionViewController: UICollectionViewController {
     let headerId = "headerId"
     let userProfilePhotoCellId = "UserProfilePhotoCellId"
+    var uid: String?
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationBar()
-        fetchUser()
+        fetchUser { (user) in
+            self.fetchOrderedPosts(user: user)
+        }
         registerCell()
         //這是不照順序抓取post的方式(因為一次抓全部的posts):dbRef.observeSingleEvent
 //        fetchUserPosts()
         //這是照child被加入DB的順序，抓取post的方式:dbRef.observe(childAdded)
         //會等到每次有post加入時，會等到那個post上傳到DB後，才會去下載
         //也解決了在PhotoSelector share出一篇新文章後，立即到UserProfile所出現的bug
-        fetchOrderedPosts()
+//        fetchOrderedPosts()
     }
     
    
@@ -74,10 +72,9 @@ class UserProfileCollectionViewController: UICollectionViewController {
     }
     
     var posts = [Post]()
-    fileprivate func fetchOrderedPosts(){
-        guard let currentUserId = Auth.auth().currentUser?.uid else {return}
-        let dummyUser = TheUser(uid: currentUserId, dictionary: ["userName" : "Dummy"])
-        Database.fetchOrderPostsWithUID(user: dummyUser, uid: currentUserId) { (post) in
+    fileprivate func fetchOrderedPosts(user: TheUser){
+        let uid = user.uid
+        Database.fetchOrderPostsWithUID(user: user, uid: uid) { (post) in
             self.posts.insert(post, at: 0)
             self.collectionView?.reloadData()
         }
@@ -127,12 +124,14 @@ class UserProfileCollectionViewController: UICollectionViewController {
     }
     
     var currentUser: TheUser?
-    fileprivate func fetchUser() {
+    fileprivate func fetchUser(completionHandler: @escaping (_ user: TheUser) -> ()) {
         guard let currentUserId = Auth.auth().currentUser?.uid else{return}
-        Database.fetchUserWithUID(uid: currentUserId) { (user) in
+        let userId = uid ?? currentUserId
+        Database.fetchUserWithUID(uid: userId) { (user) in
             self.currentUser = user
             self.navigationItem.title = user.userName
             self.collectionView?.reloadData()
+            completionHandler(user)
         }
     }
 }
@@ -154,7 +153,6 @@ extension UserProfileCollectionViewController: UICollectionViewDelegateFlowLayou
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let padding: CGFloat = 1
-        print(view.frame.width)
         let width = (view.frame.width - padding * 2)/3
         let height = width
         return CGSize(width: width, height: height)

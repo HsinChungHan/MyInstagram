@@ -31,7 +31,6 @@ class HomePostCell: BasicCell {
     fileprivate func setupAttributedCaption(post: Post){
         let userName = post.user.userName
         let caption = post.caption
-        let creationDate = post.creationDate
         
         let attributedText = NSMutableAttributedString(string: userName, attributes: [
             NSAttributedStringKey.font : UIFont.boldSystemFont(ofSize: 14)
@@ -45,7 +44,8 @@ class HomePostCell: BasicCell {
             NSAttributedStringKey.font : UIFont.systemFont(ofSize: 4)
             ]))
         
-        attributedText.append(NSMutableAttributedString(string: "creationTime", attributes: [NSAttributedStringKey.font : UIFont.systemFont(ofSize: 14),
+        let timeAgoDisplay = post.creationDate.timeAgoDisplay()
+        attributedText.append(NSMutableAttributedString(string: "\(timeAgoDisplay)", attributes: [NSAttributedStringKey.font : UIFont.systemFont(ofSize: 14),
              NSAttributedStringKey.foregroundColor : UIColor.gray
             ]))
         captionLabel.attributedText = attributedText
@@ -61,8 +61,7 @@ class HomePostCell: BasicCell {
     let userProfileImageView: CustomImageView = {
        let civ = CustomImageView()
         civ.scaleAspectFill()
-        civ.image = UIImage(named: "test user name")
-
+        civ.backgroundColor = .gray
         return civ
     }()
     

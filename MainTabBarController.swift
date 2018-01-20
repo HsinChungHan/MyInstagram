@@ -50,7 +50,9 @@ class MainTabBarController: UITabBarController {
         let homeNaviVC = templateNaviViewController(rootViewController: homeVC, unselectedImage: "home_unselected", selectedImage: "home_selected")
         
         //search tab
-        let searchVC = UIViewController()
+        let searchVCLayout = UICollectionViewFlowLayout()
+        searchVCLayout.scrollDirection = .vertical
+        let searchVC = SearchCollectionViewController(collectionViewLayout: searchVCLayout)
         let searchNaviVC = templateNaviViewController(rootViewController: searchVC, unselectedImage: "search_unselected", selectedImage: "search_selected")
     
         //plus tab

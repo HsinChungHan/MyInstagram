@@ -20,10 +20,10 @@ class HomeFeedCollectionViewController: UICollectionViewController {
         registerCell()
         setupNavigationItems()
         fetchUserPosts()
-        
-        
+        fetchFollowingPostsWithUser()
     }
-
+    
+    
     fileprivate func registerCell(){
         collectionView?.register(HomePostCell.self, forCellWithReuseIdentifier: cellId)
     }
@@ -46,28 +46,58 @@ class HomeFeedCollectionViewController: UICollectionViewController {
     }
     
     var posts = [Post]()
-    
+    var followingUsers = [TheUser]()
     fileprivate func fetchUserPosts(){
         guard let currentUserId = Auth.auth().currentUser?.uid else {return}
-        Database.fetchUserWithUID(uid: currentUserId) { (user) in
-            self.fetchPostWithUser(user: user)
+        Database.fetchUserWithUID(uid: currentUserId) { (currentUser) in
+            self.fetchPostWithUser(user: currentUser)
         }
     }
     
     fileprivate func fetchPostWithUser(user: TheUser){
         let uid = user.uid
          let dbRef = Database.database().reference(fromURL: DB_BASEURL)
-        dbRef.child("posts").child(uid).observe(.childAdded, with: { (snapshot) in
-            guard let dictionary = snapshot.value as? [String : Any] else {return}
-            let post = Post.init(dictionary: dictionary, user: user)
-            //使用append會把新的element加到array尾端，若要讓新的element在array的開頭，需要使用insert
-            self.posts.insert(post, at: 0)
+        dbRef.child("posts").child(uid).observe(.value, with: { (snapshot) in
+            guard let dictionaries = snapshot.value as? [String : Any] else {return}
+            dictionaries.forEach({ (key, value) in
+                guard let dictionary = dictionaries[key] as? [String: Any] else {return}
+                let post = Post.init(dictionary: dictionary, user: user)
+                //使用append會把新的element加到array尾端，若要讓新的element在array的開頭，需要使用insert
+                self.posts.insert(post, at: 0)
+            })
+            self.posts.sort(by: { (p1, p2) -> Bool in
+                return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+            })
             self.collectionView?.reloadData()
         }) { (error) in
             print("Failed to fetch Post: ", error)
         }
     }
     
+    
+    fileprivate func fetchFollowingPostsWithUser(){
+        fetchFollowingUsersId { (userId) in
+            Database.fetchUserWithUID(uid: userId, completionHandler: { (user) in
+                self.fetchPostWithUser(user: user)
+            })
+        }
+    }
+    
+    fileprivate func fetchFollowingUsersId(completionHandler: @escaping (_ userId: String) -> ()){
+        guard let currentUserId = Auth.auth().currentUser?.uid else {return}
+        let dbRef = Database.database().reference().child("followings").child(currentUserId)
+        dbRef.observe(.value, with: { (snapshot) in
+            guard let dictionaries = snapshot.value as? [String : Any] else {return}
+            dictionaries.forEach({ (key, value) in
+                print("key: ", key)
+                completionHandler(key)
+            })
+            
+        }) { (error) in
+            print("Failed to fetch following users ID: ", error)
+            return
+        }
+    }
     
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

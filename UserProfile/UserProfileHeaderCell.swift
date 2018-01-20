@@ -9,6 +9,95 @@
 import UIKit
 import Firebase
 class UserProfileHeaderCell: BasicCell {
+    var user: TheUser? {
+        didSet{
+            userNameLabel.text = user?.userName
+            guard let imgUrlStr = user?.profileImageUrl else {return}
+            profileImageView.loadImage(urlString: imgUrlStr)
+            setupFollowButton()
+        }
+    }
+    
+    fileprivate func setupFollowButton(){
+        guard let userId = user?.uid else {return}
+        if userId == Auth.auth().currentUser?.uid{
+            
+        }else{
+            //check if following
+            checkIsFollowingUser(userId: userId, isFollowingCompletionHandler: {
+                self.setupUnfollowStyle()
+            }, noFollowingCompletionHandler: {
+                self.setupFollowStyle()
+            })
+        }
+        
+    }
+    
+    fileprivate func checkIsFollowingUser(userId: String, isFollowingCompletionHandler: @escaping () -> (), noFollowingCompletionHandler: @escaping () -> ()){
+        guard let currentUserId = Auth.auth().currentUser?.uid else {return}
+        let dbRef = Database.database().reference().child("followings").child(currentUserId).child(userId)
+        dbRef.observe(.value, with: { (snapshot) in
+            if let isFollowing = snapshot.value as? Int, isFollowing == 1{
+                isFollowingCompletionHandler()
+            }else{
+                noFollowingCompletionHandler()
+            }
+        }) { (error) in
+            print("Failed to fetch the followings from DB: ", error)
+        }
+    }
+    
+    @objc func handleEditProfileOrFollow(){
+        guard let userId = user?.uid else {return}
+        guard let currentUserId = Auth.auth().currentUser?.uid else {return}
+        if userId != currentUserId{
+           
+            if editPorfileFollowButton.titleLabel?.text == "follow"{
+                 //follow user
+                let dbRef = Database.database().reference().child("followings").child(currentUserId)
+                let values: [String : Any] = [
+                    userId : 1
+                ]
+                dbRef.updateChildValues(values, withCompletionBlock: { (error, ref) in
+                    if let err = error{
+                        print("Failed to follow user: ",err.localizedDescription)
+                        return
+                    }
+                    print("Successfully followed user!")
+                    self.setupUnfollowStyle()
+                })
+            }else{
+                //unfollow user
+                let dbRef = Database.database().reference().child("followings").child(currentUserId).child(userId)
+                dbRef.removeValue(completionBlock: { (error, ref) in
+                    if let err = error{
+                        print("Faile to unfollow user: ", err.localizedDescription)
+                        return
+                    }
+                    print("Successfully unfollowed user!")
+                    self.setupFollowStyle()
+                })
+            }
+            
+        }else{
+            print("edit")
+        }
+    }
+    
+    private func setupFollowStyle(){
+        self.editPorfileFollowButton.setTitle("follow", for: .normal)
+        self.editPorfileFollowButton.setBackgroundColor(color: .rgb(red: 17, green: 154, blue: 237), forUIControlState: .normal)
+        self.editPorfileFollowButton.setTitleColor(.white, for: .normal)
+        self.editPorfileFollowButton.layer.borderColor = UIColor(white: 0, alpha: 0.2).cgColor
+    }
+    
+    private func setupUnfollowStyle(){
+        self.editPorfileFollowButton.setTitle("Unfollow", for: .normal)
+        self.editPorfileFollowButton.setBackgroundColor(color: .white, forUIControlState: .normal)
+        self.editPorfileFollowButton.setTitleColor(.black, for: .normal)
+        self.editPorfileFollowButton.layer.borderColor = UIColor(white: 0, alpha: 0.2).cgColor
+
+    }
     
     let profileImageView: CustomImageView = {
        let imgView = CustomImageView()
@@ -103,7 +192,9 @@ class UserProfileHeaderCell: BasicCell {
         return label
     }()
     
-    let editPorfileButton: UIButton = {
+    //因為當我們更改了btn上的title時，便需要等到都更動完後，才去設定editPorfileFollowButton，如此一來，才可以觸動
+    //func handleEditProfileOrFollow()
+    lazy var editPorfileFollowButton: UIButton = {
         let btn = UIButton(type: .system)
         btn.setTitle("Edit Profile", for: .normal)
         btn.setTitleColor(.black, for: .normal)
@@ -113,8 +204,11 @@ class UserProfileHeaderCell: BasicCell {
         btn.layer.cornerRadius = 5.0
         btn.clipsToBounds = true
         btn.titleLabel?.textAlignment = .center
+        btn.addTarget(self, action: #selector(handleEditProfileOrFollow), for: .touchUpInside)
         return btn
     }()
+    
+    
     
     override func setupViews() {
         setupImageView()
@@ -164,17 +258,11 @@ class UserProfileHeaderCell: BasicCell {
     }
     
     fileprivate func setupEditProfileButton(){
-        addSubview(editPorfileButton)
-        editPorfileButton.anchor(top: postLabel.bottomAnchor, topPadding: 12, bottom: profileImageView.bottomAnchor, bottomPadding: 0, left: profileImageView.rightAnchor, leftPadding: 10, right: rightAnchor, rightPadding: 10, width: 0, height: 0)
+        addSubview(editPorfileFollowButton)
+        editPorfileFollowButton.anchor(top: postLabel.bottomAnchor, topPadding: 12, bottom: profileImageView.bottomAnchor, bottomPadding: 0, left: profileImageView.rightAnchor, leftPadding: 10, right: rightAnchor, rightPadding: 10, width: 0, height: 0)
     }
     
-    var user: TheUser? {
-        didSet{
-            userNameLabel.text = user?.userName
-            guard let imgUrlStr = user?.profileImageUrl else {return}
-            profileImageView.loadImage(urlString: imgUrlStr)
-        }
-    }
+    
 }
 
 
