@@ -12,6 +12,9 @@ class CustomImageView: UIImageView{
     var lastUrlUsedToLoadImage: String?
     func loadImage(urlString: String) {
         lastUrlUsedToLoadImage = urlString
+        
+        //先把之前的圖片清空
+        self.image = nil
         //每次都先到cache檢查一遍，看有沒有在cache存過這個url圖片
         if let cachedImage = imageCache[urlString]{
             self.image = cachedImage

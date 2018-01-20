@@ -74,12 +74,24 @@ class UserProfileCollectionViewController: UICollectionViewController {
     var posts = [Post]()
     fileprivate func fetchOrderedPosts(user: TheUser){
         let uid = user.uid
-        Database.fetchOrderPostsWithUID(user: user, uid: uid) { (post) in
+        self.fetchOrderPostsWithUID(user: user, uid: uid) { (post) in
             self.posts.insert(post, at: 0)
             self.collectionView?.reloadData()
         }
+//        self.fetchUserPosts()
     }
     
+    func fetchOrderPostsWithUID(user: TheUser, uid: String, completionHandler: @escaping (_ post: Post) -> ()){
+        let dbRef = Database.database().reference(fromURL: DB_BASEURL).child("posts").child(uid)
+        dbRef.queryOrdered(byChild: "creationDate").observe(.childAdded , with: { (snapshot) in
+            //snapshot.key是所有的postId，snapshot.value就是每個post的內容
+            guard let dictionary = snapshot.value as? [String : Any] else {return}
+            let post = Post.init(dictionary: dictionary, user: user)
+            completionHandler(post)
+        }) { (error) in
+            print("Failed to fetch the posts form DB: ", error.localizedDescription)
+        }
+    }
     
     
     

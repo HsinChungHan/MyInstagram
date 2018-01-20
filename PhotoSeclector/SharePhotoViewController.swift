@@ -78,6 +78,8 @@ class SharePhotoViewController: UIViewController {
         navigationItem.rightBarButtonItem?.isEnabled = false
     }
     
+    
+    static let updateFeedNotificationName = NSNotification.Name(rawValue: "UpdateFeed")
     fileprivate func savePostToDBWithImageUrl(imageUrl: String){
         guard let uid = Auth.auth().currentUser?.uid else {return}
         guard let caption = textView.text else {return}
@@ -92,8 +94,11 @@ class SharePhotoViewController: UIViewController {
                 self.navigationItem.rightBarButtonItem?.isEnabled = true
                 return
             }
+            
             print("Successfully upload post to DB: ", dataRef)
-                self.dismiss(animated: true, completion: nil)
+            self.dismiss(animated: true, completion: nil)
+            
+            NotificationCenter.default.post(name: SharePhotoViewController.updateFeedNotificationName, object: nil)
         }
         
     }

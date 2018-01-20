@@ -16,13 +16,41 @@ class HomeFeedCollectionViewController: UICollectionViewController {
     let cellId = "HomePostCellId"
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleUpdateFeed), name: SharePhotoViewController.updateFeedNotificationName, object: nil)
+        
+        
         collectionView?.backgroundColor = .white
+        setupRefreshControl()
         registerCell()
         setupNavigationItems()
-        fetchUserPosts()
-        fetchFollowingPostsWithUser()
+        fetchAllPosts()
     }
     
+    @objc fileprivate func handleUpdateFeed(){
+        handleRefreshControl()
+    }
+    
+//    override func viewWillAppear(_ animated: Bool) {
+//         posts.removeAll()
+//        fetchAllPosts()
+//    }
+    
+    fileprivate func setupRefreshControl(){
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(handleRefreshControl), for: .valueChanged)
+        collectionView?.refreshControl = refreshControl
+    }
+    
+    @objc fileprivate func handleRefreshControl(){
+       posts.removeAll()
+       fetchAllPosts()
+    }
+    
+    fileprivate func fetchAllPosts(){
+        fetchUserPosts()
+        fetchFollowingUsersIds()
+    }
     
     fileprivate func registerCell(){
         collectionView?.register(HomePostCell.self, forCellWithReuseIdentifier: cellId)
@@ -56,8 +84,9 @@ class HomeFeedCollectionViewController: UICollectionViewController {
     
     fileprivate func fetchPostWithUser(user: TheUser){
         let uid = user.uid
-         let dbRef = Database.database().reference(fromURL: DB_BASEURL)
-        dbRef.child("posts").child(uid).observe(.value, with: { (snapshot) in
+         let dbRef = Database.database().reference().child("posts").child(uid)
+        dbRef.observe(.value, with: { (snapshot) in
+            self.collectionView?.refreshControl?.endRefreshing()
             guard let dictionaries = snapshot.value as? [String : Any] else {return}
             dictionaries.forEach({ (key, value) in
                 guard let dictionary = dictionaries[key] as? [String: Any] else {return}
@@ -75,22 +104,16 @@ class HomeFeedCollectionViewController: UICollectionViewController {
     }
     
     
-    fileprivate func fetchFollowingPostsWithUser(){
-        fetchFollowingUsersId { (userId) in
-            Database.fetchUserWithUID(uid: userId, completionHandler: { (user) in
-                self.fetchPostWithUser(user: user)
-            })
-        }
-    }
-    
-    fileprivate func fetchFollowingUsersId(completionHandler: @escaping (_ userId: String) -> ()){
+    fileprivate func fetchFollowingUsersIds(){
         guard let currentUserId = Auth.auth().currentUser?.uid else {return}
         let dbRef = Database.database().reference().child("followings").child(currentUserId)
         dbRef.observe(.value, with: { (snapshot) in
             guard let dictionaries = snapshot.value as? [String : Any] else {return}
             dictionaries.forEach({ (key, value) in
                 print("key: ", key)
-                completionHandler(key)
+                Database.fetchUserWithUID(uid: key, completionHandler: { (user) in
+                    self.fetchPostWithUser(user: user)
+                })
             })
             
         }) { (error) in
@@ -101,6 +124,7 @@ class HomeFeedCollectionViewController: UICollectionViewController {
     
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        print("posts.count: ",posts.count)
         return posts.count
     }
     
