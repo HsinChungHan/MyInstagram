@@ -10,6 +10,8 @@ import UIKit
 import AVFoundation
 
 class CameraViewController: UIViewController {
+   
+    
     let capturePhotoButton: UIButton = {
         let btn = UIButton(type: .system)
         btn.setImage(UIImage(named: "capture_photo")?.withRenderingMode(.alwaysOriginal) , for: .normal)
@@ -43,11 +45,17 @@ class CameraViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .black
         setupCaptureSession()
         setupCapturePhotoButton()
         setupBackHomeVCButton()
-        
+        transitioningDelegate = self
     }
+    
+    override var prefersStatusBarHidden: Bool{
+        return true
+    }
+    
     
     let output = AVCapturePhotoOutput()
     fileprivate func setupCaptureSession(){
@@ -97,19 +105,30 @@ extension CameraViewController: AVCapturePhotoCaptureDelegate{
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photoSampleBuffer: CMSampleBuffer?, previewPhoto previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
         let imgData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer!, previewPhotoSampleBuffer: previewPhotoSampleBuffer!)
         let previewImage = UIImage(data: imgData!)
-        setupPreviewImageView(previewImage: previewImage!)
-       
+        let previewPhotoContainerView = PreviewPhotoContainerView()
+        view.addSubview(previewPhotoContainerView)
+        previewPhotoContainerView.fullAnchor(super: view)
+        previewPhotoContainerView.previewImageView.image = previewImage
         
         print("Finish processing photo sample buffer...")
     }
     
-    fileprivate func setupPreviewImageView(previewImage: UIImage){
-        let previewImageView = UIImageView(image: previewImage)
-        view.addSubview(previewImageView)
-        previewImageView.contentMode = .scaleAspectFill
-        previewImageView.clipsToBounds = true
-        previewImageView.fullAnchor(super: view)
-        
-        
-    }
 }
+
+
+
+extension CameraViewController: UIViewControllerTransitioningDelegate{
+    
+    func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        let customAnimationPresentor = CustomAnimationPresentor()
+        return customAnimationPresentor
+    }
+    
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        let customAnimationDisMissor = CustomAnimationDismissor()
+        return customAnimationDisMissor
+    }
+    
+
+}
+
