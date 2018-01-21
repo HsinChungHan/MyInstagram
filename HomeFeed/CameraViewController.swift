@@ -19,7 +19,14 @@ class CameraViewController: UIViewController {
     }()
     
     @objc fileprivate func handleCapturePhoto(){
-        
+        let settings = AVCapturePhotoSettings()
+        guard let previewFormatType = settings.availablePreviewPhotoPixelFormatTypes.first else {
+            return
+        }
+        settings.previewPhotoFormat = [
+            kCVPixelBufferPixelFormatTypeKey as String : previewFormatType
+        ]
+        output.capturePhoto(with: settings, delegate: self)
     }
     
     let dismissButton: UIButton = {
@@ -41,7 +48,8 @@ class CameraViewController: UIViewController {
         setupBackHomeVCButton()
         
     }
-
+    
+    let output = AVCapturePhotoOutput()
     fileprivate func setupCaptureSession(){
         let captureSession = AVCaptureSession()
         //1.setup input
@@ -56,7 +64,6 @@ class CameraViewController: UIViewController {
         }
         
         //2.setup output
-        let output = AVCapturePhotoOutput()
         if captureSession.canAddOutput(output){
             captureSession.addOutput(output)
         }
@@ -81,5 +88,28 @@ class CameraViewController: UIViewController {
     fileprivate func setupBackHomeVCButton(){
         view.addSubview(dismissButton)
         dismissButton.anchor(top: view.topAnchor, topPadding: 10, bottom: nil, bottomPadding: 0, left: nil, leftPadding: 0, right: view.rightAnchor, rightPadding: 24, width: 80, height: 80)
+    }
+}
+
+
+
+extension CameraViewController: AVCapturePhotoCaptureDelegate{
+    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photoSampleBuffer: CMSampleBuffer?, previewPhoto previewPhotoSampleBuffer: CMSampleBuffer?, resolvedSettings: AVCaptureResolvedPhotoSettings, bracketSettings: AVCaptureBracketedStillImageSettings?, error: Error?) {
+        let imgData = AVCapturePhotoOutput.jpegPhotoDataRepresentation(forJPEGSampleBuffer: photoSampleBuffer!, previewPhotoSampleBuffer: previewPhotoSampleBuffer!)
+        let previewImage = UIImage(data: imgData!)
+        setupPreviewImageView(previewImage: previewImage!)
+       
+        
+        print("Finish processing photo sample buffer...")
+    }
+    
+    fileprivate func setupPreviewImageView(previewImage: UIImage){
+        let previewImageView = UIImageView(image: previewImage)
+        view.addSubview(previewImageView)
+        previewImageView.contentMode = .scaleAspectFill
+        previewImageView.clipsToBounds = true
+        previewImageView.fullAnchor(super: view)
+        
+        
     }
 }
