@@ -8,9 +8,6 @@
 import UIKit
 import Firebase
 
-
-
-
 class HomeFeedCollectionViewController: UICollectionViewController {
 
     let cellId = "HomePostCellId"
@@ -59,14 +56,17 @@ class HomeFeedCollectionViewController: UICollectionViewController {
     fileprivate func setupNavigationItems(){
         navigationItem.titleView = UIImageView(image: UIImage(named: "logo"))
         navigationItem.titleView?.contentMode = .scaleAspectFit
-        let leftBarButtonItem = UIBarButtonItem(image: UIImage(named: "camera")?.withRenderingMode(.alwaysOriginal) , style: .plain, target: self, action: #selector(handlePhotoButton))
+        let leftBarButtonItem = UIBarButtonItem(image: UIImage(named: "camera")?.withRenderingMode(.alwaysOriginal) , style: .plain, target: self, action: #selector(handleCameraButton))
         navigationItem.leftBarButtonItem = leftBarButtonItem
         let rightBarButtonItem = UIBarButtonItem(image: UIImage(named: "send")?.withRenderingMode(.alwaysOriginal) , style: .plain, target: self, action: #selector(handleSendButton))
         navigationItem.rightBarButtonItem = rightBarButtonItem
     }
     
-    @objc func handlePhotoButton(){
-        
+    @objc func handleCameraButton(){
+        let cameraVC = CameraViewController()
+        self.present(cameraVC , animated: true) {
+            
+        }
     }
     
     @objc func handleSendButton(){
