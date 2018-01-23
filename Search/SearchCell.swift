@@ -62,7 +62,7 @@ class SearchCell: BasicCell {
         userProfileImageView.anchor(top: nil, topPadding: 0, bottom: nil, bottomPadding: 0, left: leftAnchor, leftPadding: 8, right: nil, rightPadding: 0, width: 50, height: 50)
         userProfileImageView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         userProfileImageView.layoutIfNeeded()
-        userProfileImageView.beRoundImage(radius: userProfileImageView.frame.width)
+        userProfileImageView.beRoundImage(length: userProfileImageView.frame.width)
     }
     
     fileprivate func setupLabels(){

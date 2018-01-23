@@ -86,7 +86,7 @@ class UserProfileCollectionViewController: UICollectionViewController {
         dbRef.queryOrdered(byChild: "creationDate").observe(.childAdded , with: { (snapshot) in
             //snapshot.key是所有的postId，snapshot.value就是每個post的內容
             guard let dictionary = snapshot.value as? [String : Any] else {return}
-            let post = Post.init(dictionary: dictionary, user: user)
+            let post = Post.init(dictionary: dictionary, user: user, postId: snapshot.key)
             completionHandler(post)
         }) { (error) in
             print("Failed to fetch the posts form DB: ", error.localizedDescription)
@@ -104,8 +104,8 @@ class UserProfileCollectionViewController: UICollectionViewController {
             guard let dictionaries = snapshot.value as? [String : Any] else {return}
             dictionaries.forEach({ (key, value) in
                 guard let dictionary = value as? [String : Any] else {return}
-                let post = Post.init(dictionary: dictionary, user: self.currentUser!)
-                self.posts.append(post)
+//                let post = Post.init(dictionary: dictionary, user: self.currentUser!)
+//                self.posts.append(post)
             })
             self.collectionView?.reloadData()
         }) { (error) in

@@ -90,7 +90,7 @@ class HomeFeedCollectionViewController: UICollectionViewController {
             guard let dictionaries = snapshot.value as? [String : Any] else {return}
             dictionaries.forEach({ (key, value) in
                 guard let dictionary = dictionaries[key] as? [String: Any] else {return}
-                let post = Post.init(dictionary: dictionary, user: user)
+                let post = Post.init(dictionary: dictionary, user: user, postId: key)
                 //使用append會把新的element加到array尾端，若要讓新的element在array的開頭，需要使用insert
                 self.posts.insert(post, at: 0)
             })
@@ -131,6 +131,7 @@ class HomeFeedCollectionViewController: UICollectionViewController {
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! HomePostCell
         cell.post = posts[indexPath.item]
+        cell.delegate = self
         return cell
     }
 }
@@ -148,4 +149,12 @@ extension HomeFeedCollectionViewController: UICollectionViewDelegateFlowLayout{
 }
 
 
-
+extension HomeFeedCollectionViewController: HomePostCellDelegate{
+    func didTapComment(post: Post) {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .vertical
+        let commentVC = CommentsCollectionViewController(collectionViewLayout: layout)
+        commentVC.post = post
+        self.navigationController?.pushViewController(commentVC, animated: true)
+    }
+}

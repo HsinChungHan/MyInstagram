@@ -60,6 +60,11 @@ extension UIView{
     func fullAnchor(super view: UIView) {
         anchor(top: view.topAnchor, topPadding: 0, bottom: view.bottomAnchor, bottomPadding: 0, left: view.leftAnchor, leftPadding: 0, right: view.rightAnchor, rightPadding: 0, width: 0, height: 0)
     }
+    
+    
+    func anchorWithSameSuperView(super view: UIView, topPadding: CGFloat, bottomPadding: CGFloat, leftPadding: CGFloat, rightPadding: CGFloat) {
+        anchor(top: view.topAnchor, topPadding: topPadding, bottom: view.bottomAnchor, bottomPadding: bottomPadding, left: view.leftAnchor, leftPadding: leftPadding, right: view.rightAnchor, rightPadding: rightPadding, width: 0, height: 0)
+    }
 }
 
 extension Date{
@@ -96,6 +101,17 @@ extension Date{
     }
 }
 
-
+extension UITextField {
+    func setLeftPaddingPoints(_ amount:CGFloat){
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: amount, height: self.frame.size.height))
+        self.leftView = paddingView
+        self.leftViewMode = .always
+    }
+    func setRightPaddingPoints(_ amount:CGFloat) {
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: amount, height: self.frame.size.height))
+        self.rightView = paddingView
+        self.rightViewMode = .always
+    }
+}
 
 
