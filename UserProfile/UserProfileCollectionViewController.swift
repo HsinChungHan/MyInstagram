@@ -93,26 +93,28 @@ class UserProfileCollectionViewController: UICollectionViewController {
         guard let uid = Auth.auth().currentUser?.uid else {return}
         Database.fetchUserWithUID(uid: uid) { (user) in
             let dbRef = Database.database().reference().child("posts").child(uid)
-            var query = dbRef.queryOrderedByKey()
+//            var query = dbRef.queryOrderedByKey()
+            var query = dbRef.queryOrdered(byChild: "creationDate")
             if !self.posts.isEmpty {
-                let value = self.posts.last?.postId
-                print("last?.postId: ", value ?? "")
-                query = query.queryStarting(atValue: value)
+//                let value = self.posts.last?.postId
+//                query = query.queryStarting(atValue: value)
+                let value = self.posts.last?.creationDate.timeIntervalSince1970
+                query = query.queryEnding(atValue: value)
             }
             
             let paginLimited = 4
-            query.queryLimited(toFirst: UInt(paginLimited)).observeSingleEvent(of: .value, with: { (snapshot) in
+            query.queryLimited(toLast: UInt(paginLimited)).observeSingleEvent(of: .value, with: { (snapshot) in
                 print("Suceessfully to fetch posts!!")
                 guard var allObjects = snapshot.children.allObjects as? [DataSnapshot] else {return}
+                allObjects.reverse()
+                
                 if allObjects.count < paginLimited{
                     self.isFinishedPaging = true
                 }
-                if !self.posts.isEmpty{
+                if !self.posts.isEmpty && !allObjects.isEmpty{
                     //因為每次paging後，第一個都會重複，所以要把allObjects的第一個remove掉
                     allObjects.removeFirst()
                 }
-                
-               
                 
                 allObjects.forEach({ (snapshot) in
                     
