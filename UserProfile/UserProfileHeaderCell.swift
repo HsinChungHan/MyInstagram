@@ -8,7 +8,16 @@
 
 import UIKit
 import Firebase
+protocol UserProfileHeaderCellDelegate {
+    func didTapGridButton()
+    func didTapListButton()
+}
+
+
+
 class UserProfileHeaderCell: BasicCell {
+    var delegate: UserProfileHeaderCellDelegate?
+    
     var user: TheUser? {
         didSet{
             userNameLabel.text = user?.userName
@@ -36,7 +45,7 @@ class UserProfileHeaderCell: BasicCell {
     fileprivate func checkIsFollowingUser(userId: String, isFollowingCompletionHandler: @escaping () -> (), noFollowingCompletionHandler: @escaping () -> ()){
         guard let currentUserId = Auth.auth().currentUser?.uid else {return}
         let dbRef = Database.database().reference().child("followings").child(currentUserId).child(userId)
-        dbRef.observe(.value, with: { (snapshot) in
+        dbRef.observeSingleEvent(of: .value, with: { (snapshot) in
             if let isFollowing = snapshot.value as? Int, isFollowing == 1{
                 isFollowingCompletionHandler()
             }else{
@@ -44,6 +53,7 @@ class UserProfileHeaderCell: BasicCell {
             }
         }) { (error) in
             print("Failed to fetch the followings from DB: ", error)
+
         }
     }
     
@@ -119,18 +129,34 @@ class UserProfileHeaderCell: BasicCell {
     }()
     
     
-    let gridButton: UIButton = {
+    lazy var gridButton: UIButton = {
        let btn = UIButton(type: .system)
         btn.setImage(UIImage(named: "grid"), for: .normal)
+        btn.addTarget(self, action: #selector(handleGridButton), for: .touchUpInside)
         return btn
     }()
     
-    let listButton: UIButton = {
+    @objc func handleGridButton(){
+        print("Changing to grid view!")
+        gridButton.tintColor = UIColor.mainBlue()
+        listButton.tintColor = UIColor(white: 0, alpha: 0.2)
+        delegate?.didTapGridButton()
+    }
+    
+    lazy var listButton: UIButton = {
         let btn = UIButton(type: .system)
         btn.setImage(UIImage(named: "list"), for: .normal)
         btn.tintColor = UIColor(white: 0, alpha: 0.2)
+        btn.addTarget(self, action: #selector(handleListButton), for: .touchUpInside)
         return btn
     }()
+    
+    @objc func handleListButton(){
+        print("Changing to list view!")
+        listButton.tintColor = UIColor.mainBlue()
+        gridButton.tintColor = UIColor(white: 0, alpha: 0.2)
+        delegate?.didTapListButton()
+    }
     
     let bookMarkButton: UIButton = {
         let btn = UIButton(type: .system)

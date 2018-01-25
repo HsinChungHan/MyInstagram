@@ -16,7 +16,7 @@ class Post{
     let postImageUrl: String
     let user: TheUser
     let postId: String
-    
+    var hasLiked: Bool = false
     
     
     init(dictionary: [String : Any], user: TheUser, postId: String) {
@@ -25,10 +25,12 @@ class Post{
         self.height = dictionary["height"] as? Int ?? 0
         self.width = dictionary["width"] as? Int ?? 0
         self.user = user
-        self.postId = postId ?? ""
+        self.postId = postId
         
         let secondsFrom1970 = dictionary["creationDate"] as? Double ?? 0
         self.creationDate = Date(timeIntervalSince1970: secondsFrom1970)
+        
+        
     }
     
 }

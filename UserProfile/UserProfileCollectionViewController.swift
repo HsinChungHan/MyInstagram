@@ -12,7 +12,12 @@ import Firebase
 class UserProfileCollectionViewController: UICollectionViewController {
     let headerId = "headerId"
     let userProfilePhotoCellId = "UserProfilePhotoCellId"
+    let homePostCellId = "HomePostCell"
     var uid: String?
+    //因為程式一開始進來就會在gridView
+    var isGridView = true
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationBar()
@@ -68,7 +73,7 @@ class UserProfileCollectionViewController: UICollectionViewController {
     private func registerCell() {
         collectionView?.register(UserProfileHeaderCell.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerId)
         collectionView?.register(UserProfilePhotoCell.self, forCellWithReuseIdentifier: userProfilePhotoCellId)
-
+        collectionView?.register(HomePostCell.self, forCellWithReuseIdentifier: homePostCellId)
     }
     
     var posts = [Post]()
@@ -98,18 +103,19 @@ class UserProfileCollectionViewController: UICollectionViewController {
     fileprivate func fetchUserPosts(){
         guard let currentUserId = Auth.auth().currentUser?.uid else {return}
         let dbRef = Database.database().reference(fromURL: DB_BASEURL).child("posts").child(currentUserId)
-        dbRef.observe(.value, with: { (snapshot) in
+        dbRef.observeSingleEvent(of: .value, with: { (snapshot) in
             //這邊的snapshot.key就是一個uid，所以 snapshot.value就是uid下的node
             //要對照資料庫看
             guard let dictionaries = snapshot.value as? [String : Any] else {return}
             dictionaries.forEach({ (key, value) in
                 guard let dictionary = value as? [String : Any] else {return}
-//                let post = Post.init(dictionary: dictionary, user: self.currentUser!)
-//                self.posts.append(post)
+                //                let post = Post.init(dictionary: dictionary, user: self.currentUser!)
+                //                self.posts.append(post)
             })
             self.collectionView?.reloadData()
         }) { (error) in
             print("Failed to fetch the posts form DB: ", error.localizedDescription)
+
         }
     }
     
@@ -118,9 +124,10 @@ class UserProfileCollectionViewController: UICollectionViewController {
     //MARK: UICOllectionViewDelegate
     //設定header，要記得去調整header的大小，還有register header
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! UserProfileHeaderCell
-        header.user = currentUser
-        return header
+        let headerCell = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! UserProfileHeaderCell
+        headerCell.user = currentUser
+        headerCell.delegate = self
+        return headerCell
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -128,11 +135,25 @@ class UserProfileCollectionViewController: UICollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: userProfilePhotoCellId, for: indexPath) as! UserProfilePhotoCell
-        if !posts.isEmpty{
-            cell.post = posts[indexPath.item]
+        var cell: UICollectionViewCell
+        switch isGridView {
+        case false:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: homePostCellId, for: indexPath) as! HomePostCell
+            if !posts.isEmpty{
+                cell.post = posts[indexPath.item]
+            }
+            return cell
+        default:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: userProfilePhotoCellId, for: indexPath) as! UserProfilePhotoCell
+            if !posts.isEmpty{
+                cell.post = posts[indexPath.item]
+            }
+            return cell
         }
-        return cell
+        
+        
+        
+        
     }
     
     var currentUser: TheUser?
@@ -164,15 +185,30 @@ extension UserProfileCollectionViewController: UICollectionViewDelegateFlowLayou
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let padding: CGFloat = 1
-        let width = (view.frame.width - padding * 2)/3
-        let height = width
-        return CGSize(width: width, height: height)
+        if isGridView{
+            let padding: CGFloat = 1
+            let width = (view.frame.width - padding * 2)/3
+            let height = width
+            return CGSize(width: width, height: height)
+        }else{
+            return CGSize(width: view.frame.width, height: view.frame.width + 50 + 50 + 80 )
+        }
+        
     }
 }
 
 
-
+extension UserProfileCollectionViewController: UserProfileHeaderCellDelegate{
+    func didTapListButton() {
+        isGridView = false
+        collectionView?.reloadData()
+    }
+    
+    func didTapGridButton() {
+        isGridView = true
+        collectionView?.reloadData()
+    }
+}
 
 
 

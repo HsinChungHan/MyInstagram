@@ -11,7 +11,7 @@ extension Database{
     
     static func fetchUserWithUID(uid: String, completionHandler:@escaping (_ user: TheUser)->()) {
         let dbRef = Database.database().reference().child("users").child(uid)
-        dbRef.observe(.value, with: { (snapshot) in
+        dbRef.observeSingleEvent(of: .value, with: { (snapshot) in
             guard let dictionaries = snapshot.value as? [String : Any] else {return}
             if let userName = dictionaries["userName"] as? String,
                 let profileImgUrl = dictionaries["profileImageUrl"] as? String{
@@ -25,6 +25,7 @@ extension Database{
         }) { (error) in
             print("Failed to fetch who post: ", error)
         }
+        
     }
 }
 

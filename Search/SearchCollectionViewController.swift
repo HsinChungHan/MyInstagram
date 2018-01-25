@@ -53,8 +53,8 @@ class SearchCollectionViewController: UICollectionViewController {
     var filterUsers = [TheUser]()
     var users = [TheUser]()
     fileprivate func fetchUsers(){
-        let dbRef = Database.database().reference(fromURL: DB_BASEURL)
-        dbRef.child("users").observe(.value, with: { (snapshot) in
+        let dbRef = Database.database().reference().child("users")
+        dbRef.observeSingleEvent(of: .value, with: { (snapshot) in
             guard let dictionaries = snapshot.value as? [String : Any] else {return}
             dictionaries.forEach({ (key, value) in
                 if key == Auth.auth().currentUser?.uid{
