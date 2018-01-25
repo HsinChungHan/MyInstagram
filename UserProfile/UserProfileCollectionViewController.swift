@@ -22,8 +22,11 @@ class UserProfileCollectionViewController: UICollectionViewController {
         super.viewDidLoad()
         setupNavigationBar()
         fetchUser { (user) in
-            self.fetchOrderedPosts(user: user)
+//            self.fetchOrderedPosts(user: user)
+            self.paginatePost()
         }
+        
+        
         registerCell()
         //這是不照順序抓取post的方式(因為一次抓全部的posts):dbRef.observeSingleEvent
 //        fetchUserPosts()
@@ -83,12 +86,54 @@ class UserProfileCollectionViewController: UICollectionViewController {
             self.posts.insert(post, at: 0)
             self.collectionView?.reloadData()
         }
-//        self.fetchUserPosts()
     }
     
-    func fetchOrderPostsWithUID(user: TheUser, uid: String, completionHandler: @escaping (_ post: Post) -> ()){
+    var isFinishedPaging = false
+    fileprivate func paginatePost(){
+        guard let uid = Auth.auth().currentUser?.uid else {return}
+        Database.fetchUserWithUID(uid: uid) { (user) in
+            let dbRef = Database.database().reference().child("posts").child(uid)
+            var query = dbRef.queryOrderedByKey()
+            if !self.posts.isEmpty {
+                let value = self.posts.last?.postId
+                print("last?.postId: ", value ?? "")
+                query = query.queryStarting(atValue: value)
+            }
+            
+            let paginLimited = 4
+            query.queryLimited(toFirst: UInt(paginLimited)).observeSingleEvent(of: .value, with: { (snapshot) in
+                print("Suceessfully to fetch posts!!")
+                guard var allObjects = snapshot.children.allObjects as? [DataSnapshot] else {return}
+                if allObjects.count < paginLimited{
+                    self.isFinishedPaging = true
+                }
+                if !self.posts.isEmpty{
+                    //因為每次paging後，第一個都會重複，所以要把allObjects的第一個remove掉
+                    allObjects.removeFirst()
+                }
+                
+               
+                
+                allObjects.forEach({ (snapshot) in
+                    
+                    guard let dictionary = snapshot.value as? [String : Any] else {return}
+                    print(snapshot.key)
+                    let post = Post.init(dictionary: dictionary, user: user, postId: snapshot.key)
+                    self.posts.append(post)
+                    self.collectionView?.reloadData()
+                })
+            }) { (error) in
+                print("Failed to fetch posts: ", error.localizedDescription)
+            }
+        }
+    }
+    
+    
+    
+    fileprivate func fetchOrderPostsWithUID(user: TheUser, uid: String, completionHandler: @escaping (_ post: Post) -> ()){
         let dbRef = Database.database().reference(fromURL: DB_BASEURL).child("posts").child(uid)
         dbRef.queryOrdered(byChild: "creationDate").observe(.childAdded , with: { (snapshot) in
+            print("Successfully fetch posts from DB!!")
             //snapshot.key是所有的postId，snapshot.value就是每個post的內容
             guard let dictionary = snapshot.value as? [String : Any] else {return}
             let post = Post.init(dictionary: dictionary, user: user, postId: snapshot.key)
@@ -135,7 +180,11 @@ class UserProfileCollectionViewController: UICollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        var cell: UICollectionViewCell
+        //pagination logic
+        
+        if indexPath.item == self.posts.count - 1 && !isFinishedPaging{//也就是說到了posts的最後一個的時候，觸發pagination
+            paginatePost()
+        }
         switch isGridView {
         case false:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: homePostCellId, for: indexPath) as! HomePostCell
