@@ -13,6 +13,7 @@ class UserProfileCollectionViewController: UICollectionViewController {
     let headerId = "headerId"
     let userProfilePhotoCellId = "UserProfilePhotoCellId"
     let homePostCellId = "HomePostCell"
+    let homeFooterCellId = "HomeFooterViewCell"
     var uid: String?
     //因為程式一開始進來就會在gridView
     var isGridView = true
@@ -77,6 +78,8 @@ class UserProfileCollectionViewController: UICollectionViewController {
         collectionView?.register(UserProfileHeaderCell.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerId)
         collectionView?.register(UserProfilePhotoCell.self, forCellWithReuseIdentifier: userProfilePhotoCellId)
         collectionView?.register(HomePostCell.self, forCellWithReuseIdentifier: homePostCellId)
+        
+        collectionView?.register(HomeFooterCell.self, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: homeFooterCellId)
     }
     
     var posts = [Post]()
@@ -171,11 +174,18 @@ class UserProfileCollectionViewController: UICollectionViewController {
     //MARK: UICOllectionViewDelegate
     //設定header，要記得去調整header的大小，還有register header
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let headerCell = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! UserProfileHeaderCell
-        headerCell.user = currentUser
-        headerCell.delegate = self
-        return headerCell
+        if kind == UICollectionElementKindSectionHeader{
+            let headerCell = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as! UserProfileHeaderCell
+            headerCell.user = currentUser
+            headerCell.delegate = self
+            return headerCell
+        }
+        let footerCell = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionElementKindSectionFooter, withReuseIdentifier: homeFooterCellId, for: indexPath) as! HomeFooterCell
+        footerCell.backgroundColor = .red
+        return footerCell
     }
+    
+    
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return posts.count
@@ -183,9 +193,10 @@ class UserProfileCollectionViewController: UICollectionViewController {
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         //pagination logic
-        
+
         if indexPath.item == self.posts.count - 1 && !isFinishedPaging{//也就是說到了posts的最後一個的時候，觸發pagination
             paginatePost()
+            
         }
         switch isGridView {
         case false:
@@ -203,8 +214,7 @@ class UserProfileCollectionViewController: UICollectionViewController {
         }
         
         
-        
-        
+    
     }
     
     var currentUser: TheUser?
@@ -224,8 +234,14 @@ class UserProfileCollectionViewController: UICollectionViewController {
 extension UserProfileCollectionViewController: UICollectionViewDelegateFlowLayout{
    //去調整header大小
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        
         return CGSize(width: view.frame.width, height: 200)
     }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+        return CGSize(width: view.frame.width, height: 100)
+    }
+    
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 1

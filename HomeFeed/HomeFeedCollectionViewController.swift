@@ -106,7 +106,6 @@ class HomeFeedCollectionViewController: UICollectionViewController {
             self.posts.sort(by: { (p1, p2) -> Bool in
                 return p1.creationDate.compare(p2.creationDate) == .orderedDescending
             })
-            print("The posts number are: ", self.posts.count)
             self.collectionView?.reloadData()
         }) { (error) in
             print("Faile to fetch the liked post: ", error.localizedDescription)
@@ -136,7 +135,6 @@ class HomeFeedCollectionViewController: UICollectionViewController {
     
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        print("posts.count: ",posts.count)
         return posts.count
     }
     
@@ -144,7 +142,6 @@ class HomeFeedCollectionViewController: UICollectionViewController {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! HomePostCell
         if posts.count > 0{
             cell.post = posts[indexPath.item]
-            print("cell.post = posts[\(indexPath.item)]")
             cell.delegate = self
         }
         
